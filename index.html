@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=80mm, initial-scale=1.0">
+    <title>Nota de Venta</title>
+    <style>
+        body {
+            font-family: 'Courier New', Tahoma, Helvetica, sans-serif; /* Courier le da ese toque clásico de ticket */
+            margin: 0;
+            padding: 2mm;
+            font-size: 2.8mm;
+            color: #000;
+        }
+
+        #thermal-pos {
+            max-width: 76mm; /* Ajustado para aprovechar mejor el ancho estándar sin desbordar */
+            margin: 0 auto;
+        }
+
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+        .bold { font-weight: bold; }
+        .m-0 { margin: 0; }
+
+        .header-empresa {
+            font-size: 3.5mm;
+            line-height: 1.2;
+            margin-bottom: 2mm;
+        }
+
+        .info-boleta {
+            margin: 3mm 0;
+            line-height: 1.4;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2mm;
+        }
+
+        .table th {
+            border-top: 1px dashed #000;
+            border-bottom: 1px dashed #000;
+            padding: 1mm 0;
+            font-size: 2.6mm;
+        }
+
+        .table td {
+            padding: 1mm 0;
+            vertical-align: top;
+            font-size: 2.6mm;
+        }
+
+        .table-footer-container {
+            margin-top: 2mm;
+            border-top: 1px dashed #000;
+            padding-top: 1mm;
+            line-height: 1.5;
+        }
+
+        .total-letras {
+            font-size: 2.5mm;
+            margin: 2mm 0;
+            font-style: italic;
+        }
+
+        .policy {
+            margin-top: 5mm;
+            border-top: 1px dotted #000;
+            padding-top: 2mm;
+            font-size: 2.4mm;
+        }
+    </style>
+</head>
+<body onload="window.print()" onfocus="window.close()">
+
+    <script>
+        // Obtener los parámetros de la URL
+        const params = new URLSearchParams(window.location.search);
+
+        // Parámetros generales
+        var nombre_empresa = params.has('nombre_empresa') ? params.get('nombre_empresa') : "EL PALACIO DE LOS PRODUCTOS D.V.";
+        var nro_boleta = params.has('boleta') ? params.get('boleta') : "---";
+        var direc = params.has('direccion') ? params.get('direccion') : "---";
+        var client = params.has('cliente') ? params.get('cliente') : "---";
+        var fecha = params.has('fecha') ? params.get('fecha') : "dd/mm/aaaa hh:mm:ss";
+        
+        // Totales y pie
+        var total = params.has('total') ? params.get('total') : "0";
+        var a_cuenta = params.has('a_cuenta') ? params.get('a_cuenta') : "0";
+        var saldo = params.has('saldo') ? params.get('saldo') : "0";
+        var total_letras = params.has('total_letras') ? params.get('total_letras') : "";
+
+        // Listas de datos desde AppSheet (Separadas por comas de la forma: "item1, item2")
+        var cantidades = params.has('cantidades') ? params.get('cantidades') : "0";
+        var descripciones = params.has('servicios') ? params.get('servicios') : "No hay artículos";
+        var ums = params.has('ums') ? params.get('ums') : "CAJA"; // NUEVA VARIABLE PARA U.M.
+        var p_units = params.has('p_unit') ? params.get('p_unit') : "0";
+        var subtotales = params.has('subtotales') ? params.get('subtotales') : "0"; // NUEVA VARIABLE PARA S.TOTAL
+
+        // Formatear totales generales
+        var total_fmt = parseFloat(total).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        var a_cuenta_fmt = parseFloat(a_cuenta).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        var saldo_fmt = parseFloat(saldo).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // Convertir strings en arrays
+        cantidades = cantidades.split(", ");
+        descripciones = descripciones.split(", "); 
+        ums = ums.split(", ");
+        p_units = p_units.split(", ");
+        subtotales = subtotales.split(", ");
+
+        // Generar estructura de filas
+        var result = [];
+        cantidades.forEach(function(value, id) {
+            result[id] = {
+                cantidad: cantidades[id] ? cantidades[id] : "0",
+                descripcion: descripciones[id] ? descripciones[id] : "---",
+                um: ums[id] ? ums[id] : "CAJA",
+                precio_unit: p_units[id] ? parseFloat(p_units[id]).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : "0,00",
+                subtotal: subtotales[id] ? parseFloat(subtotales[id]).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : "0,00"
+            };
+        });
+    </script>
+
+    <div id="thermal-pos">
+        <div class="text-center">
+            <h2 class="header-empresa m-0 bold" id="nombre_empresa_id"></h2>
+            <p class="m-0" id="direccion_id"></p>
+        </div>         
+        
+        <div class="info-boleta text-left">
+            <div class="bold">NOTA DE VENTA N° <span id="nro_boleta_id"></span></div>
+            <div><span class="bold">FECHA:</span> <span id="fecha_id"></span></div>
+            <div><span class="bold">NOMBRE:</span> <span id="cliente_id"></span></div>
+        </div>
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="text-left" style="width: 12%;">CANT</th>
+                    <th class="text-left" style="width: 40%;">PRODUCTO</th>
+                    <th class="text-center" style="width: 13%;">U.M.</th>
+                    <th class="text-right" style="width: 15%;">P.U.</th>
+                    <th class="text-right" style="width: 20%;">S.TOTAL</th>
+                </tr>
+            </thead>
+            <tbody id="tablaBody">
+                </tbody>
+        </table>
+
+        <script>
+            var tablaBody = document.getElementById("tablaBody");
+
+            result.forEach(function(row) {
+                var newRow = document.createElement("tr");
+                newRow.innerHTML = `
+                    <td class="text-left">${row.cantidad}</td>
+                    <td class="text-left">${row.descripcion}</td>
+                    <td class="text-center">${row.um}</td>
+                    <td class="text-right">${row.precio_unit}</td>
+                    <td class="text-right">${row.subtotal}</td>
+                `;
+                tablaBody.appendChild(newRow);
+            });
+        </script>
+        
+        <div class="table-footer-container">
+            <div style="display: flex; justify-content: space-between;" class="bold">
+                <span>TOTAL</span>
+                <span id="total_val"></span>
+            </div>
+            
+            <div class="total-letras text-left" id="total_letras_id"></div>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 1mm;">
+                <span>A CUENTA:</span>
+                <span id="a_cuenta_val"></span>
+            </div>
+            <div style="display: flex; justify-content: space-between;" class="bold">
+                <span>SALDO:</span>
+                <span id="saldo_val"></span>
+            </div>
+        </div>
+
+        <div class="policy text-center">
+            <p class="m-0 bold">Apps para Mypes</p>
+            <p class="m-0">Contactos: +591 68098299</p>
+            <p class="m-0">Siguenos en redes sociales como @appsparamypesbo</p>
+        </div>
+    </div>
+
+    <script>
+        // Inyectar los datos en el HTML
+        document.getElementById("nombre_empresa_id").textContent = nombre_empresa;
+        document.getElementById("direccion_id").textContent = direc;
+        document.getElementById("nro_boleta_id").textContent = nro_boleta;
+        document.getElementById("fecha_id").textContent = fecha;
+        document.getElementById("cliente_id").textContent = client;
+        
+        document.getElementById("total_val").textContent = total_fmt;
+        document.getElementById("a_cuenta_val").textContent = a_cuenta_fmt + " Bs";
+        document.getElementById("saldo_val").textContent = saldo_fmt + " Bs";
+        
+        if(total_letras) {
+            document.getElementById("total_letras_id").textContent = "SON: " + total_letras.toUpperCase();
+        }
+    </script>
+</body>
+</html>
