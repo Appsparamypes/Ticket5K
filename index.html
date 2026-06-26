@@ -1,179 +1,136 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=80mm, initial-scale=1.0">
-    <title>Nota de Venta</title>
-    <style>
-        body {
-            /* Fuente monoespaciada clásica de tickets de venta */
-            font-family: 'Lucida Console', Monaco, Courier, monospace; 
-            margin: 0;
-            padding: 4mm;
-            font-size: 3.2mm;
-            color: #000;
-            background-color: #fff;
-        }
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>NOTADEVENTA&lt;&lt;[NRO_VENTA]&gt;&gt; </title>
+<style type="text/css" media="print">
+@page {
+      display:block;
+      width:78mm;
+}
+table {
+      width:75mm;
+}
+img {
+      width: 70mm;
+}
+.oculto-impresion,
+.oculto-impresion * {
+      display: none !important;
+}
+* {
+      font-size: 10px;
+}
+.cuadro{
+      border: 2px solid black;
+      margin: 2px;
+      padding-bottom: 1px;
+      margin-bottom:10px;
+      margin-right: 5px;
+      
+}
+</style>
+<style type="text/css" media="screen">
+body{
+      display:block;
+      width:240px;
+      font-size: 11px;
+}
 
-        #thermal-pos {
-            max-width: 72mm;
-            margin: 0 auto;
-        }
+table{
+      width:220px;
+      margin-right: 10px;
+}
+* {
+      font-size: 10px;
 
-        .text-center { text-align: center; }
-        .text-left { text-align: left; }
-        .text-right { text-align: right; }
-        .bold { font-weight: bold; }
-        .m-0 { margin: 0; }
+}
 
-        .header-empresa {
-            font-size: 3.8mm;
-            line-height: 1.3;
-            margin-bottom: 1mm;
+.cuadro{
+      border: 2px solid black;
+      margin: 2px;
+      padding-top: 2px;
+      padding-bottom: 1px;
+      margin-bottom:10px;
+      margin-right: 5px;
+      
+}
+.printbutton {
+            cursor: pointer;
         }
+</style>
+<link rel="stylesheet" href="bootstrap-print.min.css" media="print">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<script src="https://kit.fontawesome.com/3eaaca7ef6.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="style.css">
+<script src="script.js"></script>
+<script src="./ConectorEscposAndroid.js" type="text/javascript"></script>
+<script src="./main.js" type="text/javascript"></script>
+<script>
+      window.onload = function () {
+              print();
+          };</script>
 
-        .info-boleta {
-            margin: 4mm 0;
-            line-height: 1.5;
-        }
-
-        /* Estilos exactos de la tabla del PDF */
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 2mm;
-            margin-bottom: 2mm;
-        }
-
-        /* Fondo gris oscuro con letras blancas para los títulos */
-        .table th {
-            background-color: #333333;
-            color: #ffffff;
-            font-weight: bold;
-            padding: 1.5mm 1mm;
-            font-size: 2.8mm;
-            border: 1px solid #333333;
-        }
-
-        .table td {
-            padding: 1.5mm 1mm;
-            vertical-align: top;
-            font-size: 3mm;
-            border-bottom: 1px solid #eee; /* Línea sutil de separación entre filas */
-        }
-
-        /* Contenedor inferior para los saldos */
-        .footer-saldos {
-            margin-top: 3mm;
-            line-height: 1.6;
-        }
-
-        .fila-balance {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5mm 0;
-        }
-
-        .total-letras {
-            font-size: 2.8mm;
-            margin: 3mm 0;
-            border-top: 1px solid #000;
-            border-bottom: 1px solid #000;
-            padding: 1.5mm 0;
-        }
-
-        /* Sección fija de Apps para Mypes */
-        .policy {
-            margin-top: 6mm;
-            border-top: 1px dashed #999;
-            padding-top: 3mm;
-            font-size: 2.6mm;
-            line-height: 1.4;
-            color: #555;
-        }
-    </style>
 </head>
-<body onload="window.print()" onfocus="window.close()">
-
-    <script>
-        // Obtener los parámetros de la URL
-        const params = new URLSearchParams(window.location.search);
-
-        // Parámetros de cabecera
-        var nombre_empresa = params.has('nombre_empresa') ? params.get('nombre_empresa') : "EL PALACIO DE LOS PRODUCTOS D.V.";
-        var nro_boleta = params.has('boleta') ? params.get('boleta') : "26";
-        var direc = params.has('direccion') ? params.get('direccion') : "Villa Bolívar D Calle 131";
-        var client = params.has('cliente') ? params.get('cliente') : "Gustavo Mamani";
-        var fecha = params.has('fecha') ? params.get('fecha') : "27/5/2026 19:42:47";
-        
-        // Datos de importes y texto inferior
-        var total = params.has('total') ? params.get('total') : "6080";
-        var a_cuenta = params.has('a_cuenta') ? params.get('a_cuenta') : "0";
-        var saldo = params.has('saldo') ? params.get('saldo') : "6080";
-        var total_letras = params.has('total_letras') ? params.get('total_letras') : "SEIS MIL OCHENTA 0/100 BOLIVIANOS";
-
-        // Parámetros de las columnas (listas separadas por comas desde AppSheet)
-        var cantidades = params.has('cantidades') ? params.get('cantidades') : "4,00, 3,00, 2,00";
-        var descripciones = params.has('servicios') ? params.get('servicios') : "sedal sachet original 96x40ml., KARICIA toallas higienicas 48x10, klin 10x1kilo";
-        var ums = params.has('ums') ? params.get('ums') : "CAJA, CAJA, CAJA"; 
-        var p_units = params.has('p_unit') ? params.get('p_unit') : "260,00, 310,00, 290,00";
-        var subtotales = params.has('subtotales') ? params.get('subtotales') : "1040,00, 930,00, 580,00"; 
-
-        // Formatear importes generales numéricos (reemplazar comas/puntos según prefieras)
-        var total_fmt = parseFloat(total).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        var a_cuenta_fmt = parseFloat(a_cuenta).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        var saldo_fmt = parseFloat(saldo).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-        // Convertir cadenas de texto en Arrays
-        cantidades = cantidades.split(", ");
-        descripciones = descripciones.split(", "); 
-        ums = ums.split(", ");
-        p_units = p_units.split(", ");
-        subtotales = subtotales.split(", ");
-
-        // Estructurar filas para el bucle
-        var result = [];
-        cantidades.forEach(function(value, id) {
-            result[id] = {
-                cantidad: cantidades[id] ? cantidades[id] : "0,00",
-                descripcion: descripciones[id] ? descripciones[id] : "---",
-                um: ums[id] ? ums[id] : "CAJA",
-                precio_unit: p_units[id] ? p_units[id] : "0,00",
-                subtotal: subtotales[id] ? subtotales[id] : "0,00"
-            };
-        });
-    </script>
-
-    <div id="thermal-pos">
-        <div class="text-center">
-            <h2 class="header-empresa m-0 bold" id="nombre_empresa_id"></h2>
-            <p class="m-0" id="direccion_id"></p>
-        </div>         
-        
-        <div class="info-boleta text-left">
-            <div><span class="bold">NOTA DE VENTA N°</span> <span id="nro_boleta_id"></span></div>
-            <div><span class="bold">FECHA:</span> <span id="fecha_id"></span></div>
-            <div><span class="bold">NOMBRE:</span> <span id="cliente_id"></span></div>
-        </div>
-        
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="text-left" style="width: 15%;">CANT</th>
-                    <th class="text-left" style="width: 40%;">PRODUCTO</th>
-                    <th class="text-center" style="width: 10%;">U.M.</th>
-                    <th class="text-right" style="width: 15%;">P.U.</th>
-                    <th class="text-right" style="width: 20%;">S.TOTAL</th>
-                </tr>
-            </thead>
-            <tbody id="tablaBody">
-                </tbody>
-        </table>
-
-        <script>
-            var tablaBody = document.getElementById("tablaBody");
-
-            result.forEach(function(row) {
-                var new
+<body class="fw-bold">
+     <center id="ticket"> <div class="container">
+            <div class="row justify-content-center">
+            <p class="btn btn-primary btn-lg printbutton oculto-impresion align-content-center" >Imprimir</p>
+            <br><br>
+                  <div class="col-12 justify-content-center">
+<img src="logo_mamma_rawbt.jpg" width="110px"><br><br>
+<div class="cuadro"><br>
+<p class="h4"><svg width="15" height="12" viewBox="0 0 1664 1472" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#000000" d="M1664 675V331q0-40-50-89.5T1503.5 160t-95.5-32q0-24-20-44t-44-20H320q-24 0-44 20t-20 44q-35 0-95.5 32T50 241.5T0 331v337q0 39 34.5 72t93.5 42v562q-26 0-45 19t-19 45t19 45t45 19h1408q26 0 45-19t19-45t-19-45t-45-19V785q60-10 94-40.5t34-69.5zM896 896v448H256V782q79-24 96-39q57 50 160 50t160-50q57 50 160 50t160-50q57 50 160 50t160-50q17 15 96 39v562h-128V896H896zm64 64h256v384H960V960zM384 677l-1-377q0-58 33.5-82t94.5-26h129q0 54 1 223.5t0 261.5q-37 50-129 50q-90 0-128-50zm639 0V192h128q24 1 31 1.5t26 3t25 6t18 11.5t16 19t8 28t4 39l1 377q-6 27-41.5 41t-86.5 14t-87-14t-42-41zM384 896v320h384V896H384zm64 64h256v192H448V960z"/>
+  </svg> &lt;&lt;Start: [Related Productos]&gt;&gt;</p> 
+<p>
+      <i class="fa-solid fa-map-location-dot"></i> &lt;&lt;LOOKUP("DATOSEMP","DATOS EMPRESA","ID DATOSEMPRESA","DIRECCION")&gt;&gt;
+      <br>
+<br>
+<i class="fa-solid fa-phone"></i>LOOKUP("DATOSEMP","DATOS EMPRESA","ID DATOSEMPRESA","WHATSAPP")<br>
+<svg width="10" height="10" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#000000" d="M182.594 0C81.445 0 0 81.445 0 182.594v634.813c0 101.149 81.445 182.594 182.594 182.594h344.063V609.063H423.282v-140.75h103.375v-120.25c0-94.475 61.079-181.219 201.781-181.219c56.968 0 99.094 5.469 99.094 5.469l-3.313 131.438s-42.963-.406-89.844-.406c-50.739 0-58.875 23.378-58.875 62.188v102.781h152.75l-6.656 140.75H675.5v390.938h141.906c101.149 0 182.594-81.445 182.594-182.594V182.595C1000 81.446 918.555.001 817.406.001H182.593z"/>
+  </svg> LOOKUP("DATOSEMP","DATOS EMPRESA","ID DATOSEMPRESA","FACEBOOK")<br>
+</div>
+<p class="fs-3"><i class="fa-regular fa-file-lines fs-3"></i> NOTA DE VENTA NRO: &lt;&lt;[NRO_VENTA]&gt;&gt;</p>
+      <p class="h4"><i class="fa-solid fa-user fs-4"></i> &lt;&lt;[CLIENTE].[NOMBRE]&gt;&gt;</p>
+<hr>
+      <table class="table table-sm">
+<thead>
+<th scope="col" class="producto">PRODUCTO</th>
+<th scope="col" class="cantidad">CANT.</th>
+<th scope="col" class="precio text-end ps-2">SUBTOTAL</th>
+</thead>
+        <tbody>
+         <p>&lt;&lt;Start: [Related Detalle ventas]&gt;&gt;</p>
+               <tr>
+			<td class="producto fw-bold">&lt;&lt;[N_PRODUCTO]&gt;&gt;</td> 
+			<td class="cantidad fw-bold">&lt;&lt;[CANTIDAD]&gt;&gt;</td>		 
+               		<td class="precio text-end ps-2 fw-bold">$ &lt;&lt;[TOTAL]&gt;&gt;</td>
+            </tr>
+                   <p>&lt;&lt;End&gt;&gt;</p>
+                   </tbody>
+    </table> 
+    <p class="text-end fw-bolder" style="margin-right: 5px;">TOTAL: &lt;&lt;[TOTAL]&gt;&gt;</p>
+   <p class="text-end fw-bolder" style="margin-right: 5px;">A CUENTA: &lt;&lt;[A CUENTA]&gt;&gt;</p>
+   <p class="text-end fw-bolder" style="margin-right: 5px;">SALDO:  &lt;&lt;[SALDO]&gt;&gt;</p>
+ <p class="text-end fw-bolder fs-5" style="margin-right: 5px;">SON: &lt;&lt;UPPER([letras])&gt;&gt; &lt;&lt;[decimales]&gt;&gt;</p>
+<br>
+<div class="modal-footer"><br>
+<p>
+<span> ¡Gracias por su Compra! </span></p>
+</div><br>
+<br>
+<hr>
+</div>
+</div>
+</div>
+</center> 
+<script>
+      window.onload = function () {
+              print();
+          };</script>
+</body>
+</html>
