@@ -7,15 +7,17 @@
     <title>Nota de Venta</title>
     <style>
         body {
-            font-family: 'Courier New', Tahoma, Helvetica, sans-serif; /* Courier le da ese toque clásico de ticket */
+            /* Fuente monoespaciada clásica de tickets de venta */
+            font-family: 'Lucida Console', Monaco, Courier, monospace; 
             margin: 0;
-            padding: 2mm;
-            font-size: 2.8mm;
+            padding: 4mm;
+            font-size: 3.2mm;
             color: #000;
+            background-color: #fff;
         }
 
         #thermal-pos {
-            max-width: 76mm; /* Ajustado para aprovechar mejor el ancho estándar sin desbordar */
+            max-width: 72mm;
             margin: 0 auto;
         }
 
@@ -26,53 +28,70 @@
         .m-0 { margin: 0; }
 
         .header-empresa {
-            font-size: 3.5mm;
-            line-height: 1.2;
-            margin-bottom: 2mm;
+            font-size: 3.8mm;
+            line-height: 1.3;
+            margin-bottom: 1mm;
         }
 
         .info-boleta {
-            margin: 3mm 0;
-            line-height: 1.4;
+            margin: 4mm 0;
+            line-height: 1.5;
         }
 
+        /* Estilos exactos de la tabla del PDF */
         .table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 2mm;
+            margin-bottom: 2mm;
         }
 
+        /* Fondo gris oscuro con letras blancas para los títulos */
         .table th {
-            border-top: 1px dashed #000;
-            border-bottom: 1px dashed #000;
-            padding: 1mm 0;
-            font-size: 2.6mm;
+            background-color: #333333;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 1.5mm 1mm;
+            font-size: 2.8mm;
+            border: 1px solid #333333;
         }
 
         .table td {
-            padding: 1mm 0;
+            padding: 1.5mm 1mm;
             vertical-align: top;
-            font-size: 2.6mm;
+            font-size: 3mm;
+            border-bottom: 1px solid #eee; /* Línea sutil de separación entre filas */
         }
 
-        .table-footer-container {
-            margin-top: 2mm;
-            border-top: 1px dashed #000;
-            padding-top: 1mm;
-            line-height: 1.5;
+        /* Contenedor inferior para los saldos */
+        .footer-saldos {
+            margin-top: 3mm;
+            line-height: 1.6;
+        }
+
+        .fila-balance {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5mm 0;
         }
 
         .total-letras {
-            font-size: 2.5mm;
-            margin: 2mm 0;
-            font-style: italic;
+            font-size: 2.8mm;
+            margin: 3mm 0;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 1.5mm 0;
         }
 
+        /* Sección fija de Apps para Mypes */
         .policy {
-            margin-top: 5mm;
-            border-top: 1px dotted #000;
-            padding-top: 2mm;
-            font-size: 2.4mm;
+            margin-top: 6mm;
+            border-top: 1px dashed #999;
+            padding-top: 3mm;
+            font-size: 2.6mm;
+            line-height: 1.4;
+            color: #555;
         }
     </style>
 </head>
@@ -82,47 +101,47 @@
         // Obtener los parámetros de la URL
         const params = new URLSearchParams(window.location.search);
 
-        // Parámetros generales
+        // Parámetros de cabecera
         var nombre_empresa = params.has('nombre_empresa') ? params.get('nombre_empresa') : "EL PALACIO DE LOS PRODUCTOS D.V.";
-        var nro_boleta = params.has('boleta') ? params.get('boleta') : "---";
-        var direc = params.has('direccion') ? params.get('direccion') : "---";
-        var client = params.has('cliente') ? params.get('cliente') : "---";
-        var fecha = params.has('fecha') ? params.get('fecha') : "dd/mm/aaaa hh:mm:ss";
+        var nro_boleta = params.has('boleta') ? params.get('boleta') : "26";
+        var direc = params.has('direccion') ? params.get('direccion') : "Villa Bolívar D Calle 131";
+        var client = params.has('cliente') ? params.get('cliente') : "Gustavo Mamani";
+        var fecha = params.has('fecha') ? params.get('fecha') : "27/5/2026 19:42:47";
         
-        // Totales y pie
-        var total = params.has('total') ? params.get('total') : "0";
+        // Datos de importes y texto inferior
+        var total = params.has('total') ? params.get('total') : "6080";
         var a_cuenta = params.has('a_cuenta') ? params.get('a_cuenta') : "0";
-        var saldo = params.has('saldo') ? params.get('saldo') : "0";
-        var total_letras = params.has('total_letras') ? params.get('total_letras') : "";
+        var saldo = params.has('saldo') ? params.get('saldo') : "6080";
+        var total_letras = params.has('total_letras') ? params.get('total_letras') : "SEIS MIL OCHENTA 0/100 BOLIVIANOS";
 
-        // Listas de datos desde AppSheet (Separadas por comas de la forma: "item1, item2")
-        var cantidades = params.has('cantidades') ? params.get('cantidades') : "0";
-        var descripciones = params.has('servicios') ? params.get('servicios') : "No hay artículos";
-        var ums = params.has('ums') ? params.get('ums') : "CAJA"; // NUEVA VARIABLE PARA U.M.
-        var p_units = params.has('p_unit') ? params.get('p_unit') : "0";
-        var subtotales = params.has('subtotales') ? params.get('subtotales') : "0"; // NUEVA VARIABLE PARA S.TOTAL
+        // Parámetros de las columnas (listas separadas por comas desde AppSheet)
+        var cantidades = params.has('cantidades') ? params.get('cantidades') : "4,00, 3,00, 2,00";
+        var descripciones = params.has('servicios') ? params.get('servicios') : "sedal sachet original 96x40ml., KARICIA toallas higienicas 48x10, klin 10x1kilo";
+        var ums = params.has('ums') ? params.get('ums') : "CAJA, CAJA, CAJA"; 
+        var p_units = params.has('p_unit') ? params.get('p_unit') : "260,00, 310,00, 290,00";
+        var subtotales = params.has('subtotales') ? params.get('subtotales') : "1040,00, 930,00, 580,00"; 
 
-        // Formatear totales generales
+        // Formatear importes generales numéricos (reemplazar comas/puntos según prefieras)
         var total_fmt = parseFloat(total).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         var a_cuenta_fmt = parseFloat(a_cuenta).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         var saldo_fmt = parseFloat(saldo).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        // Convertir strings en arrays
+        // Convertir cadenas de texto en Arrays
         cantidades = cantidades.split(", ");
         descripciones = descripciones.split(", "); 
         ums = ums.split(", ");
         p_units = p_units.split(", ");
         subtotales = subtotales.split(", ");
 
-        // Generar estructura de filas
+        // Estructurar filas para el bucle
         var result = [];
         cantidades.forEach(function(value, id) {
             result[id] = {
-                cantidad: cantidades[id] ? cantidades[id] : "0",
+                cantidad: cantidades[id] ? cantidades[id] : "0,00",
                 descripcion: descripciones[id] ? descripciones[id] : "---",
                 um: ums[id] ? ums[id] : "CAJA",
-                precio_unit: p_units[id] ? parseFloat(p_units[id]).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : "0,00",
-                subtotal: subtotales[id] ? parseFloat(subtotales[id]).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : "0,00"
+                precio_unit: p_units[id] ? p_units[id] : "0,00",
+                subtotal: subtotales[id] ? subtotales[id] : "0,00"
             };
         });
     </script>
@@ -134,7 +153,7 @@
         </div>         
         
         <div class="info-boleta text-left">
-            <div class="bold">NOTA DE VENTA N° <span id="nro_boleta_id"></span></div>
+            <div><span class="bold">NOTA DE VENTA N°</span> <span id="nro_boleta_id"></span></div>
             <div><span class="bold">FECHA:</span> <span id="fecha_id"></span></div>
             <div><span class="bold">NOMBRE:</span> <span id="cliente_id"></span></div>
         </div>
@@ -142,9 +161,9 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th class="text-left" style="width: 12%;">CANT</th>
+                    <th class="text-left" style="width: 15%;">CANT</th>
                     <th class="text-left" style="width: 40%;">PRODUCTO</th>
-                    <th class="text-center" style="width: 13%;">U.M.</th>
+                    <th class="text-center" style="width: 10%;">U.M.</th>
                     <th class="text-right" style="width: 15%;">P.U.</th>
                     <th class="text-right" style="width: 20%;">S.TOTAL</th>
                 </tr>
@@ -157,58 +176,4 @@
             var tablaBody = document.getElementById("tablaBody");
 
             result.forEach(function(row) {
-                var newRow = document.createElement("tr");
-                newRow.innerHTML = `
-                    <td class="text-left">${row.cantidad}</td>
-                    <td class="text-left">${row.descripcion}</td>
-                    <td class="text-center">${row.um}</td>
-                    <td class="text-right">${row.precio_unit}</td>
-                    <td class="text-right">${row.subtotal}</td>
-                `;
-                tablaBody.appendChild(newRow);
-            });
-        </script>
-        
-        <div class="table-footer-container">
-            <div style="display: flex; justify-content: space-between;" class="bold">
-                <span>TOTAL</span>
-                <span id="total_val"></span>
-            </div>
-            
-            <div class="total-letras text-left" id="total_letras_id"></div>
-
-            <div style="display: flex; justify-content: space-between; margin-top: 1mm;">
-                <span>A CUENTA:</span>
-                <span id="a_cuenta_val"></span>
-            </div>
-            <div style="display: flex; justify-content: space-between;" class="bold">
-                <span>SALDO:</span>
-                <span id="saldo_val"></span>
-            </div>
-        </div>
-
-        <div class="policy text-center">
-            <p class="m-0 bold">Apps para Mypes</p>
-            <p class="m-0">Contactos: +591 68098299</p>
-            <p class="m-0">Siguenos en redes sociales como @appsparamypesbo</p>
-        </div>
-    </div>
-
-    <script>
-        // Inyectar los datos en el HTML
-        document.getElementById("nombre_empresa_id").textContent = nombre_empresa;
-        document.getElementById("direccion_id").textContent = direc;
-        document.getElementById("nro_boleta_id").textContent = nro_boleta;
-        document.getElementById("fecha_id").textContent = fecha;
-        document.getElementById("cliente_id").textContent = client;
-        
-        document.getElementById("total_val").textContent = total_fmt;
-        document.getElementById("a_cuenta_val").textContent = a_cuenta_fmt + " Bs";
-        document.getElementById("saldo_val").textContent = saldo_fmt + " Bs";
-        
-        if(total_letras) {
-            document.getElementById("total_letras_id").textContent = "SON: " + total_letras.toUpperCase();
-        }
-    </script>
-</body>
-</html>
+                var new
