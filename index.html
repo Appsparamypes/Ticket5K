@@ -112,8 +112,9 @@
         //Recibe los datos de los servicios (separados por comas)
         var cantidades = params.has('cantidades') ? params.get('cantidades') : "0.00";
         var descripciones = params.has('servicios') ? params.get('servicios') : "No hay articulos";
-        var p_units = params.has('p_unit') ? params.get('p_unit') : "0.00";
-        
+        var subtotal = params.has('subtotal') ? params.get('subtotal') : "0.00";
+        var umed = params.has('umed') ? params.get('umed') : "No unidad";
+        var punit = params.has('punit') ? params.get('punit') : "No Precio";
         //Formato de 2 decimales
         total = parseFloat(total).toLocaleString('es-ES', { minimumFractionDigits: 0 });
         a_cuenta = parseFloat(a_cuenta).toLocaleString('es-ES', { minimumFractionDigits: 0 });
@@ -122,7 +123,9 @@
         //crea una lista de cada columna a partir de las comas.
         cantidades = cantidades.split(", ");
         descripciones = descripciones.split(", "); 
-        p_units = p_units.split(", ");
+        subtotales = subtotales.split(", ");
+        umedes = umedes.split(", ");
+        punits = punits.split(", ");
 
         //Crea una lista para mostrar en cada fila de la tabla
         var result = [];
@@ -131,15 +134,14 @@
             result[id] = {
                 cantidad: cantidades[id],
                 descripcion: descripciones[id], // + " " + detalles[id], // Descomenta si deseas concatenar la descripción con el detalle
-                precio_unit: parseFloat(p_units[id]).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
+                subtotal: parseFloat(subtotales[id]).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
+                umed: parseFloat(umedes[id]).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
+                punit: parseFloat(punits[id]).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
             };
         });
     </script>
     <div id="thermal-pos">
         <div class="label">
-          <img src="logoremplazado" id="logoremplazado">
-            <br/>
-            <br/>
             <p class="info-tienda">
                 Telf:  <p class="direccion" id="whatsapp" ></p>
             </p>
@@ -167,6 +169,8 @@
                 <tr class="table-header" >
                     <th><h2>Cant</h2></th>
                     <th><h2>Descripcion</h2></th>
+                    <th><h2>U.M.</h2></th>
+                    <th><h2>P.U.</h2></th>
                     <th><h2>Subtotal</h2></th>
                 </tr>
                 <script>
@@ -185,7 +189,9 @@
                     newRow.innerHTML = `
                         <td class="item">${row.cantidad}</td>
                         <td class="item">${row.descripcion}</td>
-                        <td class="item">${row.precio_unit}</td>
+                        <td class="item">${row.punit}</td>
+                        <td class="item">${row.punit}</td>
+                        <td class="item">${row.subtotal}</td>
                     `;
                     tablaBody.appendChild(newRow);
                     });
