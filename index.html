@@ -26,13 +26,17 @@
             border-collapse: collapse;
             border-spacing: 0;
         }
-        /* CORRECCIÓN 1: Se quitaron las comillas del color de fondo */
-        .table-header th {
-            margin: 0;
-            padding: 1mm 0.5mm;
-            font-size: 3.2mm;
-            background-color: #d9d9d9; 
-            font-weight: bold;
+       .table-header th {
+    margin: 0;
+    padding: 1mm 0.5mm;
+    font-size: 3.2mm;
+    background-color: #d9d9d9 !important; /* Añadimos !important por seguridad */
+    font-weight: bold;
+    
+    /* CORRECCIÓN: Esto fuerza al navegador a imprimir los fondos a color */
+    -webkit-print-color-adjust: exact; /* Para Chrome, Safari, Edge y navegadores basados en Chromium */
+    print-color-adjust: exact;         /* Para Firefox y estándar moderno */
+}
         }
         /* CORRECCIÓN 2: Asegurar que los items de la lista NO tengan negrita */
         .table-item td {
@@ -127,7 +131,7 @@
         
         <div class="label">
             <p class="fecha_entrega">
-                <b>Fecha:<span id="fecha"></span></b>
+                <b>Fecha: <span id="fecha"></span></b>
             </p>
         </div>
    
