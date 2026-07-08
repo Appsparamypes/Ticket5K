@@ -95,7 +95,7 @@
         saldo = parseFloat(saldo).toLocaleString('es-ES', { minimumFractionDigits: 0 });
                
         // CORRECCIÓN AQUÍ: split usando regex para evitar problemas si viene con o sin espacio después de la coma
-        cantidades = cantidades.split(/\s*,\s*/);
+        cantidades = cantidades.split("|");
         descripciones = descripciones.split(/\s*,\s*/); 
         var subtotalesList = subtotal.split(/\s*,\s*/);
         var umedesList = umed.split(/\s*,\s*/);
