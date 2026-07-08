@@ -26,28 +26,23 @@
             border-collapse: collapse;
             border-spacing: 0;
         }
-       .table-header th {
-    margin: 0;
-    padding: 1mm 0.5mm;
-    font-size: 3.2mm;
-    background-color: #d9d9d9 !important; /* Añadimos !important por seguridad */
-    font-weight: bold;
-    
-    /* CORRECCIÓN: Esto fuerza al navegador a imprimir los fondos a color */
-    -webkit-print-color-adjust: exact; /* Para Chrome, Safari, Edge y navegadores basados en Chromium */
-    print-color-adjust: exact;         /* Para Firefox y estándar moderno */
-}
+        .table-header th {
+            margin: 0;
+            padding: 1mm 0.5mm;
+            font-size: 3.2mm;
+            background-color: #d9d9d9 !important;
+            font-weight: bold;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
-        /* CORRECCIÓN 2: Asegurar que los items de la lista NO tengan negrita */
         .table-item td {
             font-weight: normal !important;
             padding: 1mm 0.5mm;
             font-size: 3mm;
-            text-align: left; /* Ajusta la alineación si lo prefieres */
+            text-align: left;
         }
-        /* Forzar que las columnas numéricas se alineen a la derecha si lo deseas */
         .item-num {
-            text-align: right;
+            text-align: right !important;
         }
         .table-footer {
             margin-left: 0.5mm;
@@ -99,21 +94,25 @@
         a_cuenta = parseFloat(a_cuenta).toLocaleString('es-ES', { minimumFractionDigits: 0 });
         saldo = parseFloat(saldo).toLocaleString('es-ES', { minimumFractionDigits: 0 });
                
-        cantidades = cantidades.split(", ");
-        descripciones = descripciones.split(", "); 
-        var subtotalesList = subtotal.split(", ");
-        var umedesList = umed.split(", ");
-        var punitsList = punit.split(", ");
+        // CORRECCIÓN AQUÍ: split usando regex para evitar problemas si viene con o sin espacio después de la coma
+        cantidades = cantidades.split(/\s*,\s*/);
+        descripciones = descripciones.split(/\s*,\s*/); 
+        var subtotalesList = subtotal.split(/\s*,\s*/);
+        var umedesList = umed.split(/\s*,\s*/);
+        var punitsList = punit.split(/\s*,\s*/);
 
         var result = [];
         cantidades.forEach(function(value, id) {
-            result[id] = {
-                cantidad: cantidades[id],
-                descripcion: descripciones[id],
-                subtotal: parseFloat(subtotalesList[id] || 0).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
-                umed: umedesList[id] || "---", 
-                punit: parseFloat(punitsList[id] || 0).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
-            };
+            // Validamos que la cantidad no esté vacía para evitar filas fantasmas
+            if(value.trim() !== "") {
+                result.push({
+                    cantidad: cantidades[id] || "0",
+                    descripcion: descripciones[id] || "---",
+                    subtotal: parseFloat(subtotalesList[id] || 0).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
+                    umed: umedesList[id] || "---", 
+                    punit: parseFloat(punitsList[id] || 0).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
+                });
+            }
         });
     </script>
 
@@ -167,15 +166,15 @@
                 
                 <tr class="table-footer top-line">
                     <td colspan="3"><h2>TOTAL:</h2></td>
-                    <td colspan="2"><h2 id="total"></h2></td>
+                    <td colspan="2" class="item-num"><h2 id="total"></h2></td>
                 </tr>
                 <tr class="table-footer">
                     <td colspan="3"><h2>A CUENTA:</h2></td>
-                    <td colspan="2"><h2 id="a_cuenta"></h2></td>
+                    <td colspan="2" class="item-num"><h2 id="a_cuenta"></h2></td>
                 </tr>
                 <tr class="table-footer">
                     <td colspan="3"><h2>SALDO:</h2></td>
-                    <td colspan="2"><h2 id="saldo"></h2></td>
+                    <td colspan="2" class="item-num"><h2 id="saldo"></h2></td>
                 </tr>
             </tbody>
         </table>
