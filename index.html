@@ -96,22 +96,24 @@
                
         // CORRECCIÓN AQUÍ: split usando regex para evitar problemas si viene con o sin espacio después de la coma
         cantidades = cantidades.split("|");
-        descripciones = descripciones.split(/\s*,\s*/); 
-        var subtotalesList = subtotal.split(/\s*,\s*/);
-        var umedesList = umed.split(/\s*,\s*/);
-        var punitsList = punit.split(/\s*,\s*/);
+        descripciones = descripciones.split("|"); 
+        var subtotalesList = subtotal.split("|");
+        var umedesList = umed.split("|");
+        var punitsList = punit.split("|");
 
         var result = [];
         cantidades.forEach(function(value, id) {
-            // Validamos que la cantidad no esté vacía para evitar filas fantasmas
-            if(value.trim() !== "") {
+            // Validamos que el elemento real no esté vacío
+            if(value && value.trim() !== "") {
                 result.push({
-                    cantidad: cantidades[id] || "0",
-                    descripcion: descripciones[id] || "---",
+                    cantidad: cantidades[id] ? cantidades[id].trim() : "0",
+                    descripcion: descripciones[id] ? descripciones[id].trim() : "---",
                     subtotal: parseFloat(subtotalesList[id] || 0).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
-                    umed: umedesList[id] || "---", 
+                    umed: umedesList[id] ? umedesList[id].trim() : "---", 
                     punit: parseFloat(punitsList[id] || 0).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
                 });
+            }
+        });
             }
         });
     </script>
