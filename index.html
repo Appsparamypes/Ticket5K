@@ -233,10 +233,10 @@
             // 3. SELECCIONA TU APP PUENTE DESCOMENTANDO LA QUE USES:
 
             // Opción para RawBT (Recomendada para Android por estabilidad):
-            window.location.href = `intent:#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;S.text=${textoCodificado};end;`;
+            // window.location.href = `intent:#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;S.text=${textoCodificado};end;`;
 
             // Opción para Epson TM Print Assistant (Descomenta la de abajo si usas la app oficial de Epson):
-            // window.location.href = `epsonassistant://print?text=${textoCodificado}`;
+            window.location.href = `epsonassistant://print?text=${textoCodificado}`;
         });
     </script>
 </body>
