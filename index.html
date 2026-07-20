@@ -469,6 +469,8 @@
             // Opción para RawBT (Recomendada para Android por estabilidad):
 
             // window.location.href = `intent:#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;S.text=${textoCodificado};end;`;
+            // Opción para Epson TM Print Assistant (Descomenta la de abajo si usas la app oficial de Epson):
+             // window.location.href = `epsontmassistant://print?text=${textoCodificado}`;
 
 let textoCodificado = encodeURIComponent(t);
 
@@ -498,10 +500,7 @@ let textoCodificado = encodeURIComponent(t);
     </button>
 </div>
 
-            // Opción para Epson TM Print Assistant (Descomenta la de abajo si usas la app oficial de Epson):
-
-             // window.location.href = `epsontmassistant://print?text=${textoCodificado}`;
-
+           
         });
 
     </script>
