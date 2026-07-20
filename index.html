@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <script src="epos-2.22.0.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nota de venta</title>
     <style>
@@ -213,61 +214,69 @@
         document.getElementById("forma").textContent = forma;
 
         // Función para enviar XML ePOS a la Epson TM-m30III (IP: 192.168.1.212)
-        function imprimirDirectoIpEpson() {
-            const ipImpresora = "192.168.1.212"; 
-            const urlEpson = `http://${ipImpresora}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
+       function imprimirDirectoIpEpson() {
+    // 1. Construir el documento con ePOS Builder
+    var builder = new epson.ePOSBuilder();
+    builder.addTextLang('es');
+    builder.addTextSmooth(true);
 
-            let xmlData = `<?xml version="1.0" encoding="utf-8"?>
-<epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">
-    <text align="center" width="2" height="2">${nombre_empresa.toUpperCase()}\x0A</text>
-    <text align="center">Telf: ${whatsapp}\x0A</text>
-    <text align="center">Direccion: ${direc}\x0A</text>
-    <text align="left">------------------------------------------\x0A</text>
-    <text>NOTA DE VENTA: ${nro_boleta}\x0A</text>
-    <text>CLIENTE: ${client}\x0A</text>
-    <text>FECHA: ${fecha}\x0A</text>
-    <text>------------------------------------------\x0A</text>
-    <text>Cant  Descripcion         P.U     Subt\x0A</text>
-    <text>------------------------------------------\x0A</text>`;
+    // Encabezado
+    builder.addTextAlign(builder.ALIGN_CENTER);
+    builder.addTextSize(2, 2);
+    builder.addText(nombre_empresa.toUpperCase() + '\n');
+    builder.addTextSize(1, 1);
+    builder.addText("Telf: " + whatsapp + '\n');
+    builder.addText("Dirección: " + direc + '\n');
+    builder.addText("------------------------------------------\n");
 
-            result.forEach(row => {
-                xmlData += `<text>${row.cantidad}     ${row.descripcion.substring(0,16)}     ${row.punit}     ${row.subtotal}\x0A</text>`;
-            });
+    // Datos del cliente y boleta
+    builder.addTextAlign(builder.ALIGN_LEFT);
+    builder.addText("NOTA DE VENTA: " + nro_boleta + '\n');
+    builder.addText("CLIENTE: " + client + '\n');
+    builder.addText("FECHA: " + fecha + '\n');
+    builder.addText("------------------------------------------\n");
+    builder.addText("Cant   Descripción         P.U     Subt\n");
+    builder.addText("------------------------------------------\n");
 
-            xmlData += `<text>------------------------------------------\x0A</text>
-    <text width="2" height="2">TOTAL: ${total}\x0A</text>
-    <text>A CUENTA: ${a_cuenta}\x0A</text>
-    <text>SALDO: ${saldo}\x0A</text>
-    <text>METODO DE PAGO: ${forma}\x0A</text>
-    <feed unit="30"/>
-    <cut type="feed"/>
-</epos-print>`;
+    // Detalle de ítems
+    result.forEach(row => {
+        let desc = row.descripcion.substring(0, 16).padEnd(16, ' ');
+        builder.addText(`${row.cantidad}   ${desc}   ${row.punit}   ${row.subtotal}\n`);
+    });
 
-            fetch(urlEpson, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "text/xml; charset=utf-8",
-                    "SOAPAction": '""'
-                },
-                body: xmlData
-            })
-            .then(response => {
-                if(response.ok) {
-                    console.log("Impresión enviada correctamente");
-                } else {
-                    alert("La impresora respondió con un error. Código: " + response.status);
-                }
-            })
-            .catch(error => {
-                console.error("Error de conexión:", error);
-                alert("No se pudo conectar con la Epson TM-m30III en la IP 192.168.1.212. Verifica que el celular esté en la misma red Wi-Fi.");
-            });
+    // Totales y corte
+    builder.addText("------------------------------------------\n");
+    builder.addTextSize(2, 2);
+    builder.addText("TOTAL: " + total + '\n');
+    builder.addTextSize(1, 1);
+    builder.addText("A CUENTA: " + a_cuenta + '\n');
+    builder.addText("SALDO: " + saldo + '\n');
+    builder.addText("MÉTODO DE PAGO: " + forma + '\n');
+    
+    builder.addFeedUnit(30);
+    builder.addCut(builder.CUT_FEED);
+
+    // 2. Enviar la orden a la impresora
+    var epos = new epson.ePOSPrint();
+    var ipImpresora = "192.168.1.212";
+    var address = `http://${ipImpresora}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
+
+    epos.onreceive = function (res) {
+        if (res.success) {
+            console.log("¡Ticket impreso correctamente!");
+        } else {
+            alert("Error en la impresora. Código: " + res.code);
         }
+    };
 
-        // Ejecutar envío automático 1 segundo después de cargar
-        window.addEventListener('load', () => {
-            setTimeout(imprimirDirectoIpEpson, 1000);
-        });
-    </script>
+    epos.onerror = function (err) {
+        console.error(err);
+        alert("No se pudo conectar con la Epson TM-m30III (192.168.1.212). Asegúrate de que el dispositivo esté en la misma red Wi-Fi.");
+    };
+
+    // Envío del comando generado
+    epos.send(address, builder.toString());
+}
+</script>
 </body>
 </html>
