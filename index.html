@@ -470,11 +470,37 @@
 
             // window.location.href = `intent:#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;S.text=${textoCodificado};end;`;
 
+let textoCodificado = encodeURIComponent(t);
 
+        // 2. Intent oficial configurado para la app Epson TM Print Assistant
+        // Le pasamos el texto en epmText y el ancho de papel (80mm o 58mm)
+        let intentEpson = `intent:#Intent;` +
+            `action=android.intent.action.VIEW;` +
+            `scheme=epson-tm-assistant;` +
+            `package=com.epson.tmprintassistant;` +
+            `S.epmText=${textoCodificado};` +
+            `S.epmWidth=80;` + 
+            `end;`;
+
+        window.location.href = intentEpson;
+    }
+
+    // Disparar al cargar
+    window.addEventListener('load', () => {
+        setTimeout(imprimirEpson, 400);
+    });
+</script>
+
+<!-- Botón de respaldo (por si Chrome celular bloquea el autoprint inicial) -->
+<div style="text-align: center; margin-top: 20px;">
+    <button onclick="imprimirEpson()" style="padding: 12px 24px; font-size: 16px; font-weight: bold; background-color: #0056b3; color: white; border: none; border-radius: 5px;">
+        🖨️ Imprimir Ticket (Epson Red)
+    </button>
+</div>
 
             // Opción para Epson TM Print Assistant (Descomenta la de abajo si usas la app oficial de Epson):
 
-             window.location.href = `epsontmassistant://print?text=${textoCodificado}`;
+             // window.location.href = `epsontmassistant://print?text=${textoCodificado}`;
 
         });
 
