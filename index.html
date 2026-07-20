@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=80mm, initial-scale=1.0">
-    <title>Nota de venta-</title>
+    <!-- CORRECCIÓN 1: Viewport estándar para móviles -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota de venta</title>
     <style>
         body {
             font-family: tahoma, Helvetica, sans-serif;
@@ -72,7 +73,7 @@
     <script>
         const params = new URLSearchParams(window.location.search);
 
-        var nombre_empresa = params.has('nombre') ? params.get('nombre') : "---"; // Se ajustó a 'nombre' según tu URL de prueba
+        var nombre_empresa = params.has('nombre') ? params.get('nombre') : "---";
         var whatsapp = params.has('whatsapp') ? params.get('whatsapp') : "---";
         var nro_boleta = params.has('boleta') ? params.get('boleta') : "---";
         var logo = params.has('logo') ? params.get('logo') : "";
@@ -89,11 +90,6 @@
         var subtotal = params.has('subtotal') ? params.get('subtotal') : "0.00";
         var umed = params.has('umed') ? params.get('umed') : "No unidad";
         var punit = params.has('punit') ? params.get('punit') : "No Precio";
-
-        // Guardamos los valores numéricos limpios antes de darles formato regional para el texto plano
-        var totalRaw = total;
-        var aCuentaRaw = a_cuenta;
-        var saldoRaw = saldo;
 
         total = parseFloat(total).toLocaleString('es-ES', { minimumFractionDigits: 0 });
         a_cuenta = parseFloat(a_cuenta).toLocaleString('es-ES', { minimumFractionDigits: 0 });
@@ -188,7 +184,7 @@
         </div>
     </div>
 
-   <script>
+    <script>
         document.getElementById("whatsapp").textContent = whatsapp;
         document.getElementById("nro_boleta_id").textContent = nro_boleta;
         document.getElementById("nro_direccion_id").textContent = direc;
@@ -199,9 +195,8 @@
         document.getElementById("saldo").textContent = saldo;
         document.getElementById("forma").textContent = forma;
 
-        // --- BLOQUE DE REDIRECCIÓN AUTOMÁTICA A EPSON TM PRINT ASSISTANT ---
+        // --- ENVIAR A EPSON TM PRINT ASSISTANT ---
         window.addEventListener('load', () => {
-            // 1. Construimos el texto con formato ESC/POS usando \r\n para forzar el salto de línea
             let t = "";
             t += `${nombre_empresa.toUpperCase()}\r\n`;
             t += `Telf: ${whatsapp}\r\n`;
@@ -215,7 +210,6 @@
             t += `--------------------------------\r\n`;
             
             result.forEach(row => {
-                // Formateo alineado para 32 caracteres de ancho
                 let desc = row.descripcion.length > 14 ? row.descripcion.substring(0, 14) : row.descripcion.padEnd(14, ' ');
                 t += `${row.cantidad.toString().padEnd(4, ' ')} ${desc} ${row.punit.toString().padEnd(5, ' ')} ${row.subtotal}\r\n`;
             });
@@ -226,12 +220,11 @@
             t += `SALDO:      ${saldo}\r\n`;
             t += `--------------------------------\r\n`;
             t += `METODO DE PAGO: ${forma}\r\n`;
-            t += `\r\n\r\n\r\n\r\n`; // Espacio para el avance y corte del papel
+            t += `\r\n\r\n\r\n\r\n`;
 
-            // 2. Codificación para URL
             let textoCodificado = encodeURIComponent(t);
 
-            // 3. Invocación corregida para Epson TM Print Assistant
+            // CORRECCIÓN 2: Protocolo exacto "epsontmassistant://"
             window.location.href = `epsontmassistant://print?text=${textoCodificado}`;
         });
     </script>
