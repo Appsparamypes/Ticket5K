@@ -2,207 +2,179 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <script src="epos-2.22.0.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nota de venta</title>
+    <title>Impresión de Ticket</title>
+
+    <!-- SDK de Epson ePOS -->
+    <script src="epos-2.22.0.js"></script>
+
+    <!-- Librería para convertir HTML a Canvas/Imagen -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
+        /* Estilos globales para la vista y la captura */
         body {
-            font-family: tahoma, Helvetica, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
             margin: 0;
-            font-size: 3mm;
-            text-align: center;
-            color: #333;
         }
-        #thermal-pos {
-            margin: 0 auto;
-            max-width: 80mm;
+
+        /* Contenedor principal ajustado al ancho térmico de 80mm */
+        #ticket {
+            width: 360px;
+            background: #ffffff;
+            padding: 15px;
+            box-sizing: border-box;
+            color: #000000;
         }
-        .label {
-            margin: 0;
-            margin-left: 0.5mm;
+
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+
+        .header-info {
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.3;
         }
-        .table {
+
+        .title-nota {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .cliente-destacado {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 12px 0;
+        }
+
+        .fecha-info {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        /* Tabla de Detalle */
+        .tabla-detalle {
             width: 100%;
             border-collapse: collapse;
-            border-spacing: 0;
+            margin: 10px 0;
         }
-        .table-header th {
-            margin: 0;
-            padding: 1mm 0.5mm;
-            font-size: 3.2mm;
-            background-color: #d9d9d9 !important;
-            font-weight: bold;
+
+        /* Encabezado con Fondo Gris */
+        .tabla-detalle th {
+            background-color: #d0d0d0 !important;
             -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-        .table-item td {
-            font-weight: normal !important;
-            padding: 1mm 0.5mm;
-            font-size: 3mm;
-            text-align: left;
-        }
-        .item-num {
-            text-align: right;
-        }
-        .table-footer {
-            margin-left: 0.5mm;
-        }
-        .table-footer h2, .table-footer h4 {
-            margin: 0;
-            padding: 1mm 0;
-        }
-        .saldo-text {
-            margin: 0;
-            margin-left: 0.1mm;
-        }
-        .policy {
-            margin-left: 0.5mm;
-        }
-        .table-footer td {
-            padding: 0;
-            line-height: 1;
-        }
-        .nro_boleta, .nro_mesa, .fecha_recepcion, .info-tienda, .m-0, .direccion {
-            margin: 0;
-        }
-        .btn-imprimir {
-            margin-top: 15px;
-            padding: 10px 20px;
-            font-size: 14px;
+            color: #000000;
             font-weight: bold;
-            background-color: #0056b3;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 6px 2px;
+            font-size: 14px;
+        }
+
+        .tabla-detalle td {
+            padding: 6px 2px;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        /* Alineación y anchos por columna */
+        .col-cant { width: 10%; text-align: center; }
+        .col-desc { width: 45%; text-align: left; }
+        .col-um   { width: 15%; text-align: center; }
+        .col-pu   { width: 15%; text-align: right; }
+        .col-sub  { width: 15%; text-align: right; }
+
+        /* Sección de Totales */
+        .totales-container {
+            width: 100%;
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .totales-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .metodo-pago {
+            margin-top: 20px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <script>
-        const params = new URLSearchParams(window.location.search);
-
-        var nombre_empresa = params.has('nombre') ? params.get('nombre') : "---";
-        var whatsapp = params.has('whatsapp') ? params.get('whatsapp') : "---";
-        var nro_boleta = params.has('boleta') ? params.get('boleta') : "---";
-        var logo = params.has('logo') ? params.get('logo') : "";
-        var direc = params.has('direccion') ? params.get('direccion') : "---";
-        var client = params.has('cliente') ? params.get('cliente') : "---";
-        var forma = params.has('forma') ? params.get('forma') : "---";
-        var fecha = params.has('fecha') ? params.get('fecha') : "dd/mm/aaaa hh:mm:ss";
-        var total = params.has('total') ? params.get('total') : "0";
-        var saldo = params.has('saldo') ? params.get('saldo') : "0";
-        var a_cuenta = params.has('a_cuenta') ? params.get('a_cuenta') : "0";
-        
-        var cantidades = params.has('cantidades') ? params.get('cantidades') : "0.00";
-        var descripciones = params.has('servicios') ? params.get('servicios') : "No hay articulos";
-        var subtotal = params.has('subtotal') ? params.get('subtotal') : "0.00";
-        var umed = params.has('umed') ? params.get('umed') : "No unidad";
-        var punit = params.has('punit') ? params.get('punit') : "No Precio";
-
-        var totalRaw = total;
-        var aCuentaRaw = a_cuenta;
-        var saldoRaw = saldo;
-
-        total = parseFloat(total).toLocaleString('es-ES', { minimumFractionDigits: 0 });
-        a_cuenta = parseFloat(a_cuenta).toLocaleString('es-ES', { minimumFractionDigits: 0 });
-        saldo = parseFloat(saldo).toLocaleString('es-ES', { minimumFractionDigits: 0 });
-               
-        cantidades = cantidades.split(", ");
-        descripciones = descripciones.split(", "); 
-        var subtotalesList = subtotal.split(", ");
-        var umedesList = umed.split(", ");
-        var punitsList = punit.split(", ");
-
-        var result = [];
-        cantidades.forEach(function(value, id) {
-            result[id] = {
-                cantidad: cantidades[id],
-                descripcion: descripciones[id],
-                subtotal: parseFloat(subtotalesList[id] || 0).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
-                umed: umedesList[id] || "---", 
-                punit: parseFloat(punitsList[id] || 0).toLocaleString('es-ES', { minimumFractionDigits: 0 }),
-            };
-        });
-    </script>
-
-    <div id="thermal-pos">
-        <div class="label">
-            <p class="info-tienda">
-                Telf: <span class="direccion" id="whatsapp"></span><br>
-                Dirección: <span class="direccion" id="nro_direccion_id"></span>
-            </p>
-        </div>          
-        <div class="label">
-            <b>NOTA DE VENTA: <span class="nro_boleta" id="nro_boleta_id"></span></b> 
-            <h2>CLIENTE: <span class="direccion" id="cliente_id"></span></h2>            
+    <!-- CONTENEDOR DEL TICKET (Se imprime exactamente como se ve aquí) -->
+    <div id="ticket">
+        <div class="header-info text-center">
+            <div id="empresa_id" style="font-weight: bold; font-size: 16px;"></div>
+            <div>Telf: <span id="whatsapp">71203914</span></div>
+            <div>Dirección: <span id="nro_direccion_id">Villa Bolívar D Calle 131</span></div>
+            
+            <div class="title-nota">NOTA DE VENTA: <span id="nro_boleta_id">7</span></div>
+            <div class="cliente-destacado">CLIENTE: <span id="cliente_id">Andres huacoto C.</span></div>
+            <div class="fecha-info">Fecha: <span id="fecha">07/18/2026</span></div>
         </div>
-        
-        <div class="label">
-            <p class="fecha_entrega">
-                <b>Fecha: <span id="fecha"></span></b>
-            </p>
-        </div>
-   
-        <table class="table">
-            <tbody id="tablaBody">
-                <tr class="table-header">
-                    <th>Cant</th>
-                    <th>Descripcion</th>
-                    <th>U.M.</th>
-                    <th>P.U.</th>
-                    <th>Subtotal</th>
-                </tr>
-                <script>
-                    var tablaBody = document.getElementById("tablaBody");
 
-                    result.forEach(function(row) {
-                        var newRow = document.createElement("tr");
-                        newRow.className = "table-item";
-                        newRow.innerHTML = `
-                            <td class="item">${row.cantidad}</td>
-                            <td class="item" style="text-align: left;">${row.descripcion}</td>
-                            <td class="item">${row.umed}</td>
-                            <td class="item item-num">${row.punit}</td>
-                            <td class="item item-num">${row.subtotal}</td>
-                        `;
-                        tablaBody.appendChild(newRow);
-                    });
-
-                    var spaceRow = document.createElement("tr");
-                    spaceRow.innerHTML = '<td colspan="5">&nbsp;</td>';
-                    tablaBody.appendChild(spaceRow);
-                </script>
-                
-                <tr class="table-footer top-line">
-                    <td colspan="3"><h2>TOTAL:</h2></td>
-                    <td colspan="2"><h2 id="total"></h2></td>
+        <table class="tabla-detalle">
+            <thead>
+                <tr>
+                    <th class="col-cant">Cant</th>
+                    <th class="col-desc">Descripcion</th>
+                    <th class="col-um">U.M.</th>
+                    <th class="col-pu">P.U.</th>
+                    <th class="col-sub">Subtotal</th>
                 </tr>
-                <tr class="table-footer">
-                    <td colspan="3"><h2>A CUENTA:</h2></td>
-                    <td colspan="2"><h2 id="a_cuenta"></h2></td>
-                </tr>
-                <tr class="table-footer">
-                    <td colspan="3"><h2>SALDO:</h2></td>
-                    <td colspan="2"><h2 id="saldo"></h2></td>
-                </tr>
+            </thead>
+            <tbody id="detalle_items">
+                <!-- Se poblará por JavaScript -->
             </tbody>
         </table>
-        <br/>
-        <p class="saldo-text">
-            <b><span class="estado-deuda" id="estado"></span></b>
-        </p>
-        <div class="policy">
-            <p>METODO DE PAGO: <span id="forma"></span></p>
+
+        <div class="totales-container">
+            <div class="totales-row">
+                <span>TOTAL:</span>
+                <span id="total">200</span>
+            </div>
+            <div class="totales-row">
+                <span>A CUENTA:</span>
+                <span id="a_cuenta">200</span>
+            </div>
+            <div class="totales-row">
+                <span>SALDO:</span>
+                <span id="saldo">0</span>
+            </div>
         </div>
 
-        <!-- Botón de impresión directo por LAN -->
-        <button class="btn-imprimir" onclick="imprimirDirectoIpEpson()">🖨️ Imprimir Ticket (EPSON LAN)</button>
+        <div class="metodo-pago text-center">
+            METODO DE PAGO: <span id="forma">Efectivo</span>
+        </div>
     </div>
 
     <script>
+        // --- DATOS DE EJEMPLO / DINÁMICOS ---
+        const whatsapp = "71203914";
+        const nro_boleta = "7";
+        const direc = "Villa Bolívar D Calle 131";
+        const client = "Andres huacoto C.";
+        const fecha = "07/18/2026";
+        const total = "200";
+        const a_cuenta = "200";
+        const saldo = "0";
+        const forma = "Efectivo";
+
+        const result = [
+            { cantidad: 1, descripcion: "Grano de oro 12x1litro", umed: "CAJA", punit: 200, subtotal: 200 }
+        ];
+
+        // Rellenar datos en el DOM
         document.getElementById("whatsapp").textContent = whatsapp;
         document.getElementById("nro_boleta_id").textContent = nro_boleta;
         document.getElementById("nro_direccion_id").textContent = direc;
@@ -213,70 +185,81 @@
         document.getElementById("saldo").textContent = saldo;
         document.getElementById("forma").textContent = forma;
 
-        // Función para enviar XML ePOS a la Epson TM-m30III (IP: 192.168.1.212)
-       function imprimirDirectoIpEpson() {
-    // 1. Construir el documento con ePOS Builder
-    var builder = new epson.ePOSBuilder();
-    builder.addTextLang('es');
-    builder.addTextSmooth(true);
+        // Renderizar ítems en la tabla
+        const tbody = document.getElementById("detalle_items");
+        tbody.innerHTML = "";
+        result.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="col-cant">${row.cantidad}</td>
+                <td class="col-desc">${row.descripcion}</td>
+                <td class="col-um">${row.umed || '---'}</td>
+                <td class="col-pu">${row.punit}</td>
+                <td class="col-sub">${row.subtotal}</td>
+            `;
+            tbody.appendChild(tr);
+        });
 
-    // Encabezado
-    builder.addTextAlign(builder.ALIGN_CENTER);
-    builder.addTextSize(2, 2);
-    builder.addText(nombre_empresa.toUpperCase() + '\n');
-    builder.addTextSize(1, 1);
-    builder.addText("Telf: " + whatsapp + '\n');
-    builder.addText("Dirección: " + direc + '\n');
-    builder.addText("------------------------------------------\n");
+        // --- FUNCIÓN DE IMPRESIÓN VÍA IMAGE/CANVAS ---
+        async function imprimirDirectoIpEpson() {
+            const ticketElement = document.getElementById("ticket");
 
-    // Datos del cliente y boleta
-    builder.addTextAlign(builder.ALIGN_LEFT);
-    builder.addText("NOTA DE VENTA: " + nro_boleta + '\n');
-    builder.addText("CLIENTE: " + client + '\n');
-    builder.addText("FECHA: " + fecha + '\n');
-    builder.addText("------------------------------------------\n");
-    builder.addText("Cant   Descripción         P.U     Subt\n");
-    builder.addText("------------------------------------------\n");
+            if (!ticketElement) {
+                alert("No se encontró el diseño del ticket.");
+                return;
+            }
 
-    // Detalle de ítems
-    result.forEach(row => {
-        let desc = row.descripcion.substring(0, 16).padEnd(16, ' ');
-        builder.addText(`${row.cantidad}   ${desc}   ${row.punit}   ${row.subtotal}\n`);
-    });
+            try {
+                // 1. Renderizar el HTML a Canvas
+                const canvas = await html2canvas(ticketElement, {
+                    scale: 2, // Garantiza buena nitidez en las letras
+                    useCORS: true,
+                    logging: false
+                });
 
-    // Totales y corte
-    builder.addText("------------------------------------------\n");
-    builder.addTextSize(2, 2);
-    builder.addText("TOTAL: " + total + '\n');
-    builder.addTextSize(1, 1);
-    builder.addText("A CUENTA: " + a_cuenta + '\n');
-    builder.addText("SALDO: " + saldo + '\n');
-    builder.addText("MÉTODO DE PAGO: " + forma + '\n');
-    
-    builder.addFeedUnit(30);
-    builder.addCut(builder.CUT_FEED);
+                const ctx = canvas.getContext("2d");
 
-    // 2. Enviar la orden a la impresora
-    var epos = new epson.ePOSPrint();
-    var ipImpresora = "192.168.1.212";
-    var address = `http://${ipImpresora}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
+                // 2. Construir orden de impresión Epson ePOS
+                var builder = new epson.ePOSBuilder();
+                builder.addTextLang('es');
+                builder.addTextAlign(builder.ALIGN_CENTER);
 
-    epos.onreceive = function (res) {
-        if (res.success) {
-            console.log("¡Ticket impreso correctamente!");
-        } else {
-            alert("Error en la impresora. Código: " + res.code);
+                // Enviar la imagen dibujada a la impresora
+                builder.addImage(ctx, 0, 0, canvas.width, canvas.height, builder.COLOR_1, builder.MODE_MONO);
+
+                // Avance de papel y corte
+                builder.addFeedUnit(30);
+                builder.addCut(builder.CUT_FEED);
+
+                // 3. Enviar comando por IP
+                var epos = new epson.ePOSPrint();
+                var ipImpresora = "192.168.1.212";
+                var address = `http://${ipImpresora}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
+
+                epos.onreceive = function (res) {
+                    if (res.success) {
+                        console.log("¡Ticket impreso en alta calidad!");
+                    } else {
+                        alert("Error en la impresora. Código: " + res.code);
+                    }
+                };
+
+                epos.onerror = function (err) {
+                    console.error(err);
+                    alert("No se pudo conectar con la Epson TM-m30III (192.168.1.212).");
+                };
+
+                epos.send(address, builder.toString());
+
+            } catch (error) {
+                console.error("Error al procesar la imagen del ticket:", error);
+            }
         }
-    };
 
-    epos.onerror = function (err) {
-        console.error(err);
-        alert("No se pudo conectar con la Epson TM-m30III (192.168.1.212). Asegúrate de que el dispositivo esté en la misma red Wi-Fi.");
-    };
-
-    // Envío del comando generado
-    epos.send(address, builder.toString());
-}
-</script>
+        // Listener de Carga para Auto-impresión
+        window.addEventListener('load', () => {
+            setTimeout(imprimirDirectoIpEpson, 1000);
+        });
+    </script>
 </body>
 </html>
