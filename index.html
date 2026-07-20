@@ -402,79 +402,56 @@
 
         // --- BLOQUE DE REDIRECCIÓN AUTOMÁTICA A TICKETERA ---
 
-        window.addEventListener('load', () => {
+      
+          unction imprimirDirectoIpEpson() {
+    // ⚠️ Reemplaza esta IP por la IP real de tu impresora en la red local
+    const ipImpresora = "192.168.1.212"; 
+    const urlEpson = `http://${ipImpresora}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
 
-            // 1. Construimos el diseño del ticket en texto plano plano (ESC/POS compatible)
+    // Construcción de la orden de impresión en formato XML ePOS
+    let xmlData = `<?xml version="1.0" encoding="utf-8"?>
+    <epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">
+        <text align="center" width="2" height="2">${nombre_empresa.toUpperCase()}\x0A</text>
+        <text align="center">Telf: ${whatsapp}\x0A</text>
+        <text align="center">Direccion: ${direc}\x0A</text>
+        <text align="left">--------------------------------\x0A</text>
+        <text>NOTA DE VENTA: ${nro_boleta}\x0A</text>
+        <text>CLIENTE: ${client}\x0A</text>
+        <text>FECHA: ${fecha}\x0A</text>
+        <text>--------------------------------\x0A</text>
+        <text>Cant  Descripcion      P.U   Subt\x0A</text>
+        <text>--------------------------------\x0A</text>`;
 
-            let t = "";
-
-            t += `${nombre_empresa.toUpperCase()}\n`;
-
-            t += `Telf: ${whatsapp}\n`;
-
-            t += `Direccion: ${direc}\n`;
-
-            t += `--------------------------------\n`;
-
-            t += `NOTA DE VENTA: ${nro_boleta}\n`;
-
-            t += `CLIENTE: ${client}\n`;
-
-            t += `FECHA: ${fecha}\n`;
-
-            t += `--------------------------------\n`;
-
-            t += `Cant  Descripcion      P.U   Subt\n`;
-
-            t += `--------------------------------\n`;
-
-            
-
-            result.forEach(row => {
-
-                // Formateamos las líneas del producto de forma compacta
-
-                t += `${row.cantidad}  ${row.descripcion.substring(0,15)}  ${row.punit}  ${row.subtotal}\n`;
-
-            });
-
-           function imprimirConTMUtility() {
-    let t = "";
-    t += `${nombre_empresa.toUpperCase()}\n`;
-    t += `Telf: ${whatsapp}\n`;
-    t += `Direccion: ${direc}\n`;
-    t += `--------------------------------\n`;
-    t += `NOTA DE VENTA: ${nro_boleta}\n`;
-    t += `CLIENTE: ${client}\n`;
-    t += `FECHA: ${fecha}\n`;
-    t += `--------------------------------\n`;
-    t += `Cant  Descripcion      P.U   Subt\n`;
-    t += `--------------------------------\n`;
-    
     result.forEach(row => {
-        t += `${row.cantidad}  ${row.descripcion.substring(0,12)}  ${row.punit}  ${row.subtotal}\n`;
+        xmlData += `<text>${row.cantidad}  ${row.descripcion.substring(0,12)}  ${row.punit}  ${row.subtotal}\x0A</text>`;
     });
-    
-    t += `--------------------------------\n`;
-    t += `TOTAL:      ${total}\n`;
-    t += `A CUENTA:   ${a_cuenta}\n`;
-    t += `SALDO:      ${saldo}\n`;
-    t += `--------------------------------\n`;
-    t += `METODO DE PAGO: ${forma}\n\n\n\n`;
 
-    let textoTMUtility = encodeURIComponent(t);
+    xmlData += `<text>--------------------------------\x0A</text>
+        <text width="2" height="2">TOTAL: ${total}\x0A</text>
+        <text>A CUENTA: ${a_cuenta}\x0A</text>
+        <text>SALDO: ${saldo}\x0A</text>
+        <text>METODO DE PAGO: ${forma}\x0A</text>
+        <feed unit="30"/>
+        <cut type="feed"/>
+    </epos-print>`;
 
-    // Intent específico para la app Epson TM Utility en Android
-    let intentTMUtility = `intent:#Intent;` +
-        `action=android.intent.action.VIEW;` +
-        `scheme=epson-tmutility;` +
-        `package=com.epson.tmutility;` +
-        `S.epmText=${textoTMUtility};` +
-        `end;`;
-
-    window.location.href = intentTMUtility;
+    // Petición POST directa a la IP de la impresora por LAN
+    fetch(urlEpson, {
+        method: "POST",
+        headers: {
+            "Content-Type": "text/xml; charset=utf-8",
+            "SOAPAction": '""'
+        },
+        body: xmlData
+    })
+    .then(response => {
+        if(response.ok) alert("Ticket impreso correctamente por LAN");
+    })
+    .catch(error => {
+        console.error("Error al conectar con la IP de la impresora:", error);
+        alert("No se pudo conectar a la impresora LAN. Revisa la IP y la conexión Wi-Fi.");
+    });
 }
-
 
 </body>
 
