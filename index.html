@@ -188,7 +188,7 @@
         </div>
     </div>
 
-    <script>
+   <script>
         document.getElementById("whatsapp").textContent = whatsapp;
         document.getElementById("nro_boleta_id").textContent = nro_boleta;
         document.getElementById("nro_direccion_id").textContent = direc;
@@ -199,44 +199,40 @@
         document.getElementById("saldo").textContent = saldo;
         document.getElementById("forma").textContent = forma;
 
-        // --- BLOQUE DE REDIRECCIÓN AUTOMÁTICA A TICKETERA ---
+        // --- BLOQUE DE REDIRECCIÓN AUTOMÁTICA A EPSON TM PRINT ASSISTANT ---
         window.addEventListener('load', () => {
-            // 1. Construimos el diseño del ticket en texto plano plano (ESC/POS compatible)
+            // 1. Construimos el texto con formato ESC/POS usando \r\n para forzar el salto de línea
             let t = "";
-            t += `${nombre_empresa.toUpperCase()}\n`;
-            t += `Telf: ${whatsapp}\n`;
-            t += `Direccion: ${direc}\n`;
-            t += `--------------------------------\n`;
-            t += `NOTA DE VENTA: ${nro_boleta}\n`;
-            t += `CLIENTE: ${client}\n`;
-            t += `FECHA: ${fecha}\n`;
-            t += `--------------------------------\n`;
-            t += `Cant  Descripcion      P.U   Subt\n`;
-            t += `--------------------------------\n`;
+            t += `${nombre_empresa.toUpperCase()}\r\n`;
+            t += `Telf: ${whatsapp}\r\n`;
+            t += `Direccion: ${direc}\r\n`;
+            t += `--------------------------------\r\n`;
+            t += `NOTA DE VENTA: ${nro_boleta}\r\n`;
+            t += `CLIENTE: ${client}\r\n`;
+            t += `FECHA: ${fecha}\r\n`;
+            t += `--------------------------------\r\n`;
+            t += `Cant  Descripcion      P.U   Subt\r\n`;
+            t += `--------------------------------\r\n`;
             
             result.forEach(row => {
-                // Formateamos las líneas del producto de forma compacta
-                t += `${row.cantidad}  ${row.descripcion.substring(0,15)}  ${row.punit}  ${row.subtotal}\n`;
+                // Formateo alineado para 32 caracteres de ancho
+                let desc = row.descripcion.length > 14 ? row.descripcion.substring(0, 14) : row.descripcion.padEnd(14, ' ');
+                t += `${row.cantidad.toString().padEnd(4, ' ')} ${desc} ${row.punit.toString().padEnd(5, ' ')} ${row.subtotal}\r\n`;
             });
             
-            t += `--------------------------------\n`;
-            t += `TOTAL:      ${total}\n`;
-            t += `A CUENTA:   ${a_cuenta}\n`;
-            t += `SALDO:      ${saldo}\n`;
-            t += `--------------------------------\n`;
-            t += `METODO DE PAGO: ${forma}\n`;
-            t += `\n\n\n\n`; // Saltos necesarios para alcanzar la cuchilla de corte físico
+            t += `--------------------------------\r\n`;
+            t += `TOTAL:      ${total}\r\n`;
+            t += `A CUENTA:   ${a_cuenta}\r\n`;
+            t += `SALDO:      ${saldo}\r\n`;
+            t += `--------------------------------\r\n`;
+            t += `METODO DE PAGO: ${forma}\r\n`;
+            t += `\r\n\r\n\r\n\r\n`; // Espacio para el avance y corte del papel
 
-            // 2. Codificamos el texto plano
+            // 2. Codificación para URL
             let textoCodificado = encodeURIComponent(t);
 
-            // 3. SELECCIONA TU APP PUENTE DESCOMENTANDO LA QUE USES:
-
-            // Opción para RawBT (Recomendada para Android por estabilidad):
-            // window.location.href = `intent:#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;S.text=${textoCodificado};end;`;
-
-            // Opción para Epson TM Print Assistant (Descomenta la de abajo si usas la app oficial de Epson):
-             window.location.href = `epsonassistant://print?text=${textoCodificado}`;
+            // 3. Invocación corregida para Epson TM Print Assistant
+            window.location.href = `epsontmassistant://print?text=${textoCodificado}`;
         });
     </script>
 </body>
