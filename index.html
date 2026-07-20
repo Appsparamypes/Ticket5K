@@ -471,9 +471,6 @@
             // window.location.href = `intent:#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;S.text=${textoCodificado};end;`;
             // Opción para Epson TM Print Assistant (Descomenta la de abajo si usas la app oficial de Epson):
              // window.location.href = `epsontmassistant://print?text=${textoCodificado}`;
-
-let textoCodificado = encodeURIComponent(t);
-
         // 2. Intent oficial configurado para la app Epson TM Print Assistant
         // Le pasamos el texto en epmText y el ancho de papel (80mm o 58mm)
         let intentEpson = `intent:#Intent;` +
