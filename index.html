@@ -11,21 +11,23 @@
     <!-- Librería para convertir HTML a Canvas/Imagen -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
- <style>
+    <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #ffffff;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start; /* Alineado al extremo izquierdo */
+            align-items: flex-start;
             padding: 0;
             margin: 0;
         }
 
-        /* Contenedor del recibo */
+        /* Ancho de 285px pegado completamente a la izquierda del lienzo */
         #ticket {
-            width: 80mm;
+            width: 285px;
             background: #ffffff;
-            padding: 6px 6px;
+            padding: 8px 4px 8px 0px; /* Reducido padding izquierdo a 0 */
+            margin: 0;
             box-sizing: border-box;
             color: #000000;
         }
@@ -36,24 +38,24 @@
 
         .header-info {
             margin-bottom: 8px;
-            font-size: 11px; /* Subió de 9px a 11px */
+            font-size: 12px; /* Aumentado de 11px a 12px */
             line-height: 1.2;
         }
 
         .title-nota {
-            font-size: 13px; /* Subió de 11px a 13px */
+            font-size: 14px; /* Aumentado de 13px a 14px */
             font-weight: bold;
             margin: 6px 0;
         }
 
         .cliente-destacado {
-            font-size: 14px; /* Subió de 12px a 14px */
+            font-size: 15px; /* Aumentado de 14px a 15px */
             font-weight: bold;
             margin: 8px 0;
         }
 
         .fecha-info {
-            font-size: 11px; /* Subió de 9px a 11px */
+            font-size: 12px; /* Aumentado de 11px a 12px */
             font-weight: bold;
             margin-bottom: 8px;
         }
@@ -73,29 +75,29 @@
             color: #000000;
             font-weight: bold;
             padding: 3px 1px;
-            font-size: 9px; /* Subió de 7px a 9px */
+            font-size: 10px; /* Aumentado de 9px a 10px */
         }
 
         .tabla-detalle td {
             padding: 3px 1px;
-            font-size: 9px; /* Subió de 7px a 9px */
+            font-size: 10px; /* Aumentado de 9px a 10px */
             vertical-align: middle;
             word-wrap: break-word;
             overflow-wrap: break-word;
         }
 
-        /* Distribución de columnas */
+        /* Porcentajes de columna ajustados */
         .col-cant { width: 9%;  text-align: center; }
-        .col-desc { width: 43%; text-align: left; }
-        .col-um   { width: 14%; text-align: center; }
-        .col-pu   { width: 17%; text-align: right; }
-        .col-sub  { width: 17%; text-align: right; }
+        .col-desc { width: 40%; text-align: left; }
+        .col-um   { width: 13%; text-align: center; }
+        .col-pu   { width: 18%; text-align: right; }
+        .col-sub  { width: 20%; text-align: right; }
 
         /* Totales */
         .totales-container {
-            width: 90%;
+            width: 100%;
             margin-top: 10px;
-            font-size: 13px; /* Subió de 11px a 13px */
+            font-size: 14px; /* Aumentado de 13px a 14px */
             font-weight: bold;
         }
 
@@ -107,7 +109,7 @@
 
         .metodo-pago {
             margin-top: 15px;
-            font-size: 10px; /* Subió de 8px a 10px */
+            font-size: 11px; /* Aumentado de 10px a 11px */
         }
     </style>
 </head>
@@ -115,7 +117,7 @@
 
     <div id="ticket">
         <div class="header-info text-center">
-            <div id="spn_empresa" style="font-weight: bold; font-size: 14px;"></div>
+            <div id="spn_empresa" style="font-weight: bold; font-size: 14px;"></div> <!-- Aumentado de 13px a 14px -->
             <div>Telf: <span id="spn_whatsapp"></span></div>
             <div>Dirección: <span id="spn_direc"></span></div>
             
@@ -135,7 +137,7 @@
                 </tr>
             </thead>
             <tbody id="detalle_items">
-                <!-- Se puebla dinámicamente desde los parámetros de URL -->
+                <!-- Se puebla dinámicamente -->
             </tbody>
         </table>
 
@@ -161,10 +163,8 @@
 
     <script>
         function cargarDatosDesdeURL() {
-            // Capturar los parámetros enviados por AppSheet
             const params = new URLSearchParams(window.location.search);
 
-            // Inyectar encabeza y totales
             document.getElementById("spn_nro_boleta").textContent = params.get("boleta") || "";
             document.getElementById("spn_fecha").textContent = params.get("fecha") || "";
             document.getElementById("spn_whatsapp").textContent = params.get("whatsapp") || "";
@@ -176,7 +176,6 @@
             document.getElementById("spn_a_cuenta").textContent = params.get("a_cuenta") || "0";
             document.getElementById("spn_saldo").textContent = params.get("saldo") || "0";
 
-            // Parsear las listas de detalles (separadas por comas desde AppSheet)
             const cantidades = (params.get("cantidades") || "").split(",");
             const servicios  = (params.get("servicios") || "").split(",");
             const umeds      = (params.get("umed") || "").split(",");
@@ -186,7 +185,6 @@
             const tbody = document.getElementById("detalle_items");
             tbody.innerHTML = "";
 
-            // Recorrer los ítems recibidos e insertar las filas
             if (servicios.length > 0 && servicios[0] !== "") {
                 for (let i = 0; i < servicios.length; i++) {
                     const tr = document.createElement("tr");
@@ -202,7 +200,6 @@
             }
         }
 
-        // --- FUNCIÓN DE IMPRESIÓN VÍA IMAGE/CANVAS ---
         async function imprimirDirectoIpEpson() {
             const ticketElement = document.getElementById("ticket");
 
@@ -219,7 +216,8 @@
 
                 var builder = new epson.ePOSBuilder();
                 builder.addTextLang('es');
-                builder.addTextAlign(builder.ALIGN_CENTER);
+                
+                builder.addTextAlign(builder.ALIGN_LEFT);
 
                 builder.addImage(ctx, 0, 0, canvas.width, canvas.height, builder.COLOR_1, builder.MODE_MONO);
 
@@ -229,19 +227,6 @@
                 var epos = new epson.ePOSPrint();
                 var ipImpresora = "192.168.1.212";
                 var address = `http://${ipImpresora}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
-
-                epos.onreceive = function (res) {
-                    if (res.success) {
-                        console.log("¡Ticket impreso en alta calidad!");
-                    } else {
-                        alert("Error en la impresora. Código: " + res.code);
-                    }
-                };
-
-                epos.onerror = function (err) {
-                    console.error(err);
-                    alert("No se pudo conectar con la Epson TM-m30III (192.168.1.212).");
-                };
 
                 epos.send(address, builder.toString());
 
