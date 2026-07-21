@@ -108,13 +108,13 @@
 
     <div id="ticket">
         <div class="header-info text-center">
-            <div id="empresa_id" style="font-weight: bold; font-size: 16px;"></div>
-            <div>Telf: <span id="whatsapp"></span></div>
-            <div>Dirección: <span id="nro_direccion_id"></span></div>
+            <div id="spn_empresa" style="font-weight: bold; font-size: 16px;"></div>
+            <div>Telf: <span id="spn_whatsapp"></span></div>
+            <div>Dirección: <span id="spn_direc"></span></div>
             
-            <div class="title-nota">NOTA DE VENTA: <span id="nro_boleta_id"></span></div>
-            <div class="cliente-destacado">CLIENTE: <span id="cliente_id"></span></div>
-            <div class="fecha-info">Fecha: <span id="fecha"></span></div>
+            <div class="title-nota">NOTA DE VENTA: <span id="spn_nro_boleta"></span></div>
+            <div class="cliente-destacado">CLIENTE: <span id="spn_cliente"></span></div>
+            <div class="fecha-info">Fecha: <span id="spn_fecha"></span></div>
         </div>
 
         <table class="tabla-detalle">
@@ -128,59 +128,70 @@
                 </tr>
             </thead>
             <tbody id="detalle_items">
-                <!-- Se puebla dinámicamente -->
+                <!-- Se puebla dinámicamente desde los parámetros de URL -->
             </tbody>
         </table>
 
         <div class="totales-container">
             <div class="totales-row">
                 <span>TOTAL:</span>
-                <span id="total"></span>
+                <span id="spn_total"></span>
             </div>
             <div class="totales-row">
                 <span>A CUENTA:</span>
-                <span id="a_cuenta"></span>
+                <span id="spn_a_cuenta"></span>
             </div>
             <div class="totales-row">
                 <span>SALDO:</span>
-                <span id="saldo"></span>
+                <span id="spn_saldo"></span>
             </div>
         </div>
 
         <div class="metodo-pago text-center">
-            METODO DE PAGO: <span id="forma"></span>
+            METODO DE PAGO: <span id="spn_forma"></span>
         </div>
     </div>
 
     <script>
-        // Función segura para inyectar tus variables sin conflicto de nombres con el DOM
-        function cargarDatos() {
-            if (window['whatsapp'] !== undefined) document.getElementById("whatsapp").textContent = window['whatsapp'];
-            if (window['nro_boleta'] !== undefined) document.getElementById("nro_boleta_id").textContent = window['nro_boleta'];
-            if (window['direc'] !== undefined) document.getElementById("nro_direccion_id").textContent = window['direc'];
-            if (window['client'] !== undefined) document.getElementById("cliente_id").textContent = window['client'];
-            if (window['fecha'] !== undefined) document.getElementById("fecha").textContent = window['fecha'];
-            if (window['total'] !== undefined) document.getElementById("total").textContent = window['total'];
-            if (window['a_cuenta'] !== undefined) document.getElementById("a_cuenta").textContent = window['a_cuenta'];
-            if (window['saldo'] !== undefined) document.getElementById("saldo").textContent = window['saldo'];
-            if (window['forma'] !== undefined) document.getElementById("forma").textContent = window['forma'];
+        function cargarDatosDesdeURL() {
+            // Capturar los parámetros enviados por AppSheet
+            const params = new URLSearchParams(window.location.search);
 
-            // Renderizar la lista de productos que manda tu App (result)
+            // Inyectar encabeza y totales
+            document.getElementById("spn_nro_boleta").textContent = params.get("boleta") || "";
+            document.getElementById("spn_fecha").textContent = params.get("fecha") || "";
+            document.getElementById("spn_whatsapp").textContent = params.get("whatsapp") || "";
+            document.getElementById("spn_empresa").textContent = params.get("nombre") || "";
+            document.getElementById("spn_cliente").textContent = params.get("cliente") || "";
+            document.getElementById("spn_direc").textContent = params.get("direccion") || "";
+            document.getElementById("spn_forma").textContent = params.get("forma") || "";
+            document.getElementById("spn_total").textContent = params.get("total") || "0";
+            document.getElementById("spn_a_cuenta").textContent = params.get("a_cuenta") || "0";
+            document.getElementById("spn_saldo").textContent = params.get("saldo") || "0";
+
+            // Parsear las listas de detalles (separadas por comas desde AppSheet)
+            const cantidades = (params.get("cantidades") || "").split(",");
+            const servicios  = (params.get("servicios") || "").split(",");
+            const umeds      = (params.get("umed") || "").split(",");
+            const punits     = (params.get("punit") || "").split(",");
+            const subtotales = (params.get("subtotal") || "").split(",");
+
             const tbody = document.getElementById("detalle_items");
             tbody.innerHTML = "";
-            
-            if (typeof result !== 'undefined' && Array.isArray(result)) {
-                result.forEach(row => {
+
+            // Recorrer los ítems recibidos e insertar las filas
+            if (servicios.length > 0 && servicios[0] !== "") {
+                for (let i = 0; i < servicios.length; i++) {
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
-                        <td class="col-cant">${row.cantidad}</td>
-                        <td class="col-desc">${row.descripcion}</td>
-                        <td class="col-um">${row.umed || '---'}</td>
-                        <td class="col-pu">${row.punit}</td>
-                        <td class="col-sub">${row.subtotal}</td>
+                        <td class="col-cant">${cantidades[i] ? cantidades[i].trim() : ''}</td>
+                        <td class="col-desc">${servicios[i] ? decodeURIComponent(servicios[i]).trim() : ''}</td>
+                        <td class="col-um">${umeds[i] ? decodeURIComponent(umeds[i]).trim() : '---'}</td>
+                        <td class="col-pu">${punits[i] ? punits[i].trim() : ''}</td>
+                        <td class="col-sub">${subtotales[i] ? subtotales[i].trim() : ''}</td>
                     `;
                     tbody.appendChild(tr);
-                });
+                }
             }
         }
 
@@ -188,10 +199,7 @@
         async function imprimirDirectoIpEpson() {
             const ticketElement = document.getElementById("ticket");
 
-            if (!ticketElement) {
-                alert("No se encontró el diseño del ticket.");
-                return;
-            }
+            if (!ticketElement) return;
 
             try {
                 const canvas = await html2canvas(ticketElement, {
@@ -235,9 +243,8 @@
             }
         }
 
-        // Carga de datos e impresión
         window.addEventListener('load', () => {
-            cargarDatos();
+            cargarDatosDesdeURL();
             setTimeout(imprimirDirectoIpEpson, 800);
         });
     </script>
