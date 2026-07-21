@@ -11,7 +11,7 @@
     <!-- Librería para convertir HTML a Canvas/Imagen -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-   <style>
+  <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
             background-color: #f4f4f4;
@@ -21,7 +21,7 @@
             margin: 0;
         }
 
-        /* Contenedor del recibo calibrado para 80mm (8cm) */
+        /* Contenedor del recibo */
         #ticket {
             width: 310px;
             background: #ffffff;
@@ -36,32 +36,32 @@
 
         .header-info {
             margin-bottom: 8px;
-            font-size: 13px;
+            font-size: 9px; /* Reducido de 13px a 9px */
             line-height: 1.2;
         }
 
         .title-nota {
-            font-size: 15px;
+            font-size: 11px; /* Reducido de 15px a 11px */
             font-weight: bold;
             margin: 6px 0;
         }
 
         .cliente-destacado {
-            font-size: 16px;
+            font-size: 12px; /* Reducido de 16px a 12px */
             font-weight: bold;
             margin: 8px 0;
         }
 
         .fecha-info {
-            font-size: 13px;
+            font-size: 9px; /* Reducido de 13px a 9px */
             font-weight: bold;
             margin-bottom: 8px;
         }
 
-        /* Tabla estrictamente encajada */
+        /* Tabla de Detalle */
         .tabla-detalle {
             width: 100% !important;
-            table-layout: fixed; /* Fuerza a las celdas a no salirse */
+            table-layout: fixed;
             border-collapse: collapse;
             margin: 8px 0;
             box-sizing: border-box;
@@ -72,19 +72,19 @@
             -webkit-print-color-adjust: exact;
             color: #000000;
             font-weight: bold;
-            padding: 4px 1px;
-            font-size: 11px; /* Tamaño ideal para evitar empujar celdas */
+            padding: 3px 1px;
+            font-size: 7px; /* Reducido de 11px a 7px */
         }
 
         .tabla-detalle td {
-            padding: 4px 1px;
-            font-size: 11px;
+            padding: 3px 1px;
+            font-size: 7px; /* Reducido de 11px a 7px */
             vertical-align: middle;
-            word-wrap: break-word; /* Hace salto de línea si el producto es largo */
+            word-wrap: break-word;
             overflow-wrap: break-word;
         }
 
-        /* Redistribución exacta de columnas (Suma: 100%) */
+        /* Distribución de columnas */
         .col-cant { width: 9%;  text-align: center; }
         .col-desc { width: 43%; text-align: left; }
         .col-um   { width: 14%; text-align: center; }
@@ -95,7 +95,7 @@
         .totales-container {
             width: 100%;
             margin-top: 10px;
-            font-size: 15px;
+            font-size: 11px; /* Reducido de 15px a 11px */
             font-weight: bold;
         }
 
@@ -107,7 +107,7 @@
 
         .metodo-pago {
             margin-top: 15px;
-            font-size: 12px;
+            font-size: 8px; /* Reducido de 12px a 8px */
         }
     </style>
 </head>
