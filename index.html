@@ -12,6 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
+        /* Estilos globales para la vista y la captura */
         body {
             font-family: Arial, Helvetica, sans-serif;
             background-color: #f4f4f4;
@@ -21,7 +22,7 @@
             margin: 0;
         }
 
-        /* Contenedor ajustado al ancho térmico de 80mm */
+        /* Contenedor principal ajustado al ancho térmico de 80mm */
         #ticket {
             width: 360px;
             background: #ffffff;
@@ -110,16 +111,16 @@
 </head>
 <body>
 
-    <!-- CONTENEDOR DEL TICKET -->
+    <!-- CONTENEDOR DEL TICKET (Se imprime exactamente como se ve aquí) -->
     <div id="ticket">
         <div class="header-info text-center">
             <div id="empresa_id" style="font-weight: bold; font-size: 16px;"></div>
-            <div>Telf: <span id="whatsapp"></span></div>
-            <div>Dirección: <span id="nro_direccion_id"></span></div>
+            <div>Telf: <span id="whatsapp">71203914</span></div>
+            <div>Dirección: <span id="nro_direccion_id">Villa Bolívar D Calle 131</span></div>
             
-            <div class="title-nota">NOTA DE VENTA: <span id="nro_boleta_id"></span></div>
-            <div class="cliente-destacado">CLIENTE: <span id="cliente_id"></span></div>
-            <div class="fecha-info">Fecha: <span id="fecha"></span></div>
+            <div class="title-nota">NOTA DE VENTA: <span id="nro_boleta_id">7</span></div>
+            <div class="cliente-destacado">CLIENTE: <span id="cliente_id">Andres huacoto C.</span></div>
+            <div class="fecha-info">Fecha: <span id="fecha">07/18/2026</span></div>
         </div>
 
         <table class="tabla-detalle">
@@ -133,62 +134,56 @@
                 </tr>
             </thead>
             <tbody id="detalle_items">
-                <!-- Se puebla dinámicamente -->
+                <!-- Se poblará por JavaScript -->
             </tbody>
         </table>
 
         <div class="totales-container">
             <div class="totales-row">
                 <span>TOTAL:</span>
-                <span id="total"></span>
+                <span id="total">200</span>
             </div>
             <div class="totales-row">
                 <span>A CUENTA:</span>
-                <span id="a_cuenta"></span>
+                <span id="a_cuenta">200</span>
             </div>
             <div class="totales-row">
                 <span>SALDO:</span>
-                <span id="saldo"></span>
+                <span id="saldo">0</span>
             </div>
         </div>
 
         <div class="metodo-pago text-center">
-            METODO DE PAGO: <span id="forma"></span>
+            METODO DE PAGO: <span id="forma">Efectivo</span>
         </div>
     </div>
 
     <script>
-        // Función para renderizar el DOM con tus variables globales dinámicas
-        function cargarDatosEnPantalla() {
-            if (typeof whatsapp !== 'undefined') document.getElementById("whatsapp").textContent = whatsapp;
-            if (typeof nro_boleta !== 'undefined') document.getElementById("nro_boleta_id").textContent = nro_boleta;
-            if (typeof direc !== 'undefined') document.getElementById("nro_direccion_id").textContent = direc;
-            if (typeof client !== 'undefined') document.getElementById("cliente_id").textContent = client;
-            if (typeof fecha !== 'undefined') document.getElementById("fecha").textContent = fecha;
-            if (typeof total !== 'undefined') document.getElementById("total").textContent = total;
-            if (typeof a_cuenta !== 'undefined') document.getElementById("a_cuenta").textContent = a_cuenta;
-            if (typeof saldo !== 'undefined') document.getElementById("saldo").textContent = saldo;
-            if (typeof forma !== 'undefined') document.getElementById("forma").textContent = forma;
-            if (typeof nombre_empresa !== 'undefined') document.getElementById("empresa_id").textContent = nombre_empresa;
+           // Rellenar datos en el DOM
+        document.getElementById("whatsapp").textContent = whatsapp;
+        document.getElementById("nro_boleta_id").textContent = nro_boleta;
+        document.getElementById("nro_direccion_id").textContent = direc;
+        document.getElementById("cliente_id").textContent = client;
+        document.getElementById("fecha").textContent = fecha;
+        document.getElementById("total").textContent = total;
+        document.getElementById("a_cuenta").textContent = a_cuenta;
+        document.getElementById("saldo").textContent = saldo;
+        document.getElementById("forma").textContent = forma;
 
-            // Renderizar la lista dinámica de productos (result)
-            const tbody = document.getElementById("detalle_items");
-            tbody.innerHTML = "";
-            
-            if (typeof result !== 'undefined' && Array.isArray(result)) {
-                result.forEach(row => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td class="col-cant">${row.cantidad}</td>
-                        <td class="col-desc">${row.descripcion}</td>
-                        <td class="col-um">${row.umed || '---'}</td>
-                        <td class="col-pu">${row.punit}</td>
-                        <td class="col-sub">${row.subtotal}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-        }
+        // Renderizar ítems en la tabla
+        const tbody = document.getElementById("detalle_items");
+        tbody.innerHTML = "";
+        result.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="col-cant">${row.cantidad}</td>
+                <td class="col-desc">${row.descripcion}</td>
+                <td class="col-um">${row.umed || '---'}</td>
+                <td class="col-pu">${row.punit}</td>
+                <td class="col-sub">${row.subtotal}</td>
+            `;
+            tbody.appendChild(tr);
+        });
 
         // --- FUNCIÓN DE IMPRESIÓN VÍA IMAGE/CANVAS ---
         async function imprimirDirectoIpEpson() {
@@ -202,7 +197,7 @@
             try {
                 // 1. Renderizar el HTML a Canvas
                 const canvas = await html2canvas(ticketElement, {
-                    scale: 2,
+                    scale: 2, // Garantiza buena nitidez en las letras
                     useCORS: true,
                     logging: false
                 });
@@ -246,10 +241,9 @@
             }
         }
 
-        // Ejecutar carga de datos e impresión
+        // Listener de Carga para Auto-impresión
         window.addEventListener('load', () => {
-            cargarDatosEnPantalla();
-            setTimeout(imprimirDirectoIpEpson, 800);
+            setTimeout(imprimirDirectoIpEpson, 1000);
         });
     </script>
 </body>
