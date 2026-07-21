@@ -109,12 +109,12 @@
     <div id="ticket">
         <div class="header-info text-center">
             <div id="empresa_id" style="font-weight: bold; font-size: 16px;"></div>
-            <div>Telf: <span id="whatsapp">71203914</span></div>
-            <div>Dirección: <span id="nro_direccion_id">Villa Bolívar D Calle 131</span></div>
+            <div>Telf: <span id="whatsapp"></span></div>
+            <div>Dirección: <span id="nro_direccion_id"></span></div>
             
-            <div class="title-nota">NOTA DE VENTA: <span id="nro_boleta_id">7</span></div>
-            <div class="cliente-destacado">CLIENTE: <span id="cliente_id">Andres huacoto C.</span></div>
-            <div class="fecha-info">Fecha: <span id="fecha">07/18/2026</span></div>
+            <div class="title-nota">NOTA DE VENTA: <span id="nro_boleta_id"></span></div>
+            <div class="cliente-destacado">CLIENTE: <span id="cliente_id"></span></div>
+            <div class="fecha-info">Fecha: <span id="fecha"></span></div>
         </div>
 
         <table class="tabla-detalle">
@@ -135,58 +135,56 @@
         <div class="totales-container">
             <div class="totales-row">
                 <span>TOTAL:</span>
-                <span id="total">200</span>
+                <span id="total"></span>
             </div>
             <div class="totales-row">
                 <span>A CUENTA:</span>
-                <span id="a_cuenta">200</span>
+                <span id="a_cuenta"></span>
             </div>
             <div class="totales-row">
                 <span>SALDO:</span>
-                <span id="saldo">0</span>
+                <span id="saldo"></span>
             </div>
         </div>
 
         <div class="metodo-pago text-center">
-            METODO DE PAGO: <span id="forma">Efectivo</span>
+            METODO DE PAGO: <span id="forma"></span>
         </div>
     </div>
 
     <script>
-        function renderizarDatos() {
-            // Asignación segura de campos si existen las variables globales de datos
-            if (window.whatsappData !== undefined) document.getElementById("whatsapp").textContent = window.whatsappData;
-            if (window.nro_boleta !== undefined) document.getElementById("nro_boleta_id").textContent = window.nro_boleta;
-            if (window.direc !== undefined) document.getElementById("nro_direccion_id").textContent = window.direc;
-            if (window.client !== undefined) document.getElementById("cliente_id").textContent = window.client;
-            if (window.fecha !== undefined) document.getElementById("fecha").textContent = window.fecha;
-            if (window.total !== undefined) document.getElementById("total").textContent = window.total;
-            if (window.a_cuenta !== undefined) document.getElementById("a_cuenta").textContent = window.a_cuenta;
-            if (window.saldo !== undefined) document.getElementById("saldo").textContent = window.saldo;
-            if (window.forma !== undefined) document.getElementById("forma").textContent = window.forma;
+        // Función segura para inyectar tus variables sin conflicto de nombres con el DOM
+        function cargarDatos() {
+            if (window['whatsapp'] !== undefined) document.getElementById("whatsapp").textContent = window['whatsapp'];
+            if (window['nro_boleta'] !== undefined) document.getElementById("nro_boleta_id").textContent = window['nro_boleta'];
+            if (window['direc'] !== undefined) document.getElementById("nro_direccion_id").textContent = window['direc'];
+            if (window['client'] !== undefined) document.getElementById("cliente_id").textContent = window['client'];
+            if (window['fecha'] !== undefined) document.getElementById("fecha").textContent = window['fecha'];
+            if (window['total'] !== undefined) document.getElementById("total").textContent = window['total'];
+            if (window['a_cuenta'] !== undefined) document.getElementById("a_cuenta").textContent = window['a_cuenta'];
+            if (window['saldo'] !== undefined) document.getElementById("saldo").textContent = window['saldo'];
+            if (window['forma'] !== undefined) document.getElementById("forma").textContent = window['forma'];
 
-            // Poblado de tabla
+            // Renderizar la lista de productos que manda tu App (result)
             const tbody = document.getElementById("detalle_items");
             tbody.innerHTML = "";
-
-            // Datos de prueba fallback por si 'result' viene vacío
-            const items = (typeof result !== 'undefined' && Array.isArray(result)) ? result : [
-                { cantidad: 1, descripcion: "Grano de oro 12x1litro", umed: "CAJA", punit: 200, subtotal: 200 }
-            ];
-
-            items.forEach(row => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="col-cant">${row.cantidad}</td>
-                    <td class="col-desc">${row.descripcion}</td>
-                    <td class="col-um">${row.umed || '---'}</td>
-                    <td class="col-pu">${row.punit}</td>
-                    <td class="col-sub">${row.subtotal}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+            
+            if (typeof result !== 'undefined' && Array.isArray(result)) {
+                result.forEach(row => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td class="col-cant">${row.cantidad}</td>
+                        <td class="col-desc">${row.descripcion}</td>
+                        <td class="col-um">${row.umed || '---'}</td>
+                        <td class="col-pu">${row.punit}</td>
+                        <td class="col-sub">${row.subtotal}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
         }
 
+        // --- FUNCIÓN DE IMPRESIÓN VÍA IMAGE/CANVAS ---
         async function imprimirDirectoIpEpson() {
             const ticketElement = document.getElementById("ticket");
 
@@ -237,8 +235,9 @@
             }
         }
 
+        // Carga de datos e impresión
         window.addEventListener('load', () => {
-            renderizarDatos();
+            cargarDatos();
             setTimeout(imprimirDirectoIpEpson, 800);
         });
     </script>
