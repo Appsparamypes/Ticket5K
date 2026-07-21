@@ -11,20 +11,21 @@
     <!-- Librería para convertir HTML a Canvas/Imagen -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <style>
+   <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
             background-color: #f4f4f4;
             display: flex;
             justify-content: center;
-            padding: 20px;
+            padding: 0;
             margin: 0;
         }
 
+        /* Contenedor del recibo calibrado para 80mm (8cm) */
         #ticket {
-            width: 80mm;
+            width: 310px;
             background: #ffffff;
-            padding: 0mm;
+            padding: 10px 6px;
             box-sizing: border-box;
             color: #000000;
         }
@@ -34,34 +35,36 @@
         .text-right { text-align: right; }
 
         .header-info {
-            margin-bottom: 10px;
-            font-size: 12px;
-            line-height: 1.3;
+            margin-bottom: 8px;
+            font-size: 13px;
+            line-height: 1.2;
         }
 
         .title-nota {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
-            margin: 8px 0;
+            margin: 6px 0;
         }
 
         .cliente-destacado {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
-            margin: 12px 0;
+            margin: 8px 0;
         }
 
         .fecha-info {
             font-size: 13px;
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
-        /* Tabla de Detalle */
+        /* Tabla estrictamente encajada */
         .tabla-detalle {
-            width: 90%;
+            width: 100% !important;
+            table-layout: fixed; /* Fuerza a las celdas a no salirse */
             border-collapse: collapse;
-            margin: 10px 0;
+            margin: 8px 0;
+            box-sizing: border-box;
         }
 
         .tabla-detalle th {
@@ -69,37 +72,41 @@
             -webkit-print-color-adjust: exact;
             color: #000000;
             font-weight: bold;
-            padding: 6px 2px;
-            font-size: 8px;
+            padding: 4px 1px;
+            font-size: 11px; /* Tamaño ideal para evitar empujar celdas */
         }
 
         .tabla-detalle td {
-            padding: 6px 2px;
-            font-size: 8x;
+            padding: 4px 1px;
+            font-size: 11px;
             vertical-align: middle;
+            word-wrap: break-word; /* Hace salto de línea si el producto es largo */
+            overflow-wrap: break-word;
         }
 
-        .col-cant { width: 10%; text-align: center; }
-        .col-desc { width: 45%; text-align: left; }
-        .col-um   { width: 15%; text-align: center; }
-        .col-pu   { width: 12%; text-align: right; }
-        .col-sub  { width: 18%; text-align: right; }
+        /* Redistribución exacta de columnas (Suma: 100%) */
+        .col-cant { width: 9%;  text-align: center; }
+        .col-desc { width: 43%; text-align: left; }
+        .col-um   { width: 14%; text-align: center; }
+        .col-pu   { width: 17%; text-align: right; }
+        .col-sub  { width: 17%; text-align: right; }
 
+        /* Totales */
         .totales-container {
-            width: 95%;
-            margin-top: 15px;
-            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 15px;
             font-weight: bold;
         }
 
         .totales-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .metodo-pago {
-            margin-top: 20px;
+            margin-top: 15px;
             font-size: 12px;
         }
     </style>
