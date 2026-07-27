@@ -225,7 +225,7 @@
                 builder.addCut(builder.CUT_FEED);
 
                 var epos = new epson.ePOSPrint();
-                var ipImpresora = "192.168.1.212";
+                var ipImpresora = "192.168.1.209";
                 var address = `http://${ipImpresora}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
 
                 epos.send(address, builder.toString());
