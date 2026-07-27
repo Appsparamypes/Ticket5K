@@ -161,9 +161,17 @@
         </div>
     </div>
 
-    <script>
+   <script>
+        // Variable global para la IP
+        let ipImpresora = "192.168.1.209";
+
         function cargarDatosDesdeURL() {
             const params = new URLSearchParams(window.location.search);
+
+            // Extrae la IP de la URL (?ip=192.168.1.X)
+            if (params.get("ip")) {
+                ipImpresora = params.get("ip").trim();
+            }
 
             document.getElementById("spn_nro_boleta").textContent = params.get("boleta") || "";
             document.getElementById("spn_fecha").textContent = params.get("fecha") || "";
@@ -216,7 +224,6 @@
 
                 var builder = new epson.ePOSBuilder();
                 builder.addTextLang('es');
-                
                 builder.addTextAlign(builder.ALIGN_LEFT);
 
                 builder.addImage(ctx, 0, 0, canvas.width, canvas.height, builder.COLOR_1, builder.MODE_MONO);
@@ -225,8 +232,19 @@
                 builder.addCut(builder.CUT_FEED);
 
                 var epos = new epson.ePOSPrint();
-                var ipImpresora = "192.168.1.202";
+                
+                // Construye la dirección usando la IP tomada dinámicamente de la URL
                 var address = `http://${ipImpresora}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
+
+                epos.onreceive = function (res) {
+                    if (!res.success) {
+                        alert("Error al imprimir en Epson (IP: " + ipImpresora + "). Código: " + res.code);
+                    }
+                };
+
+                epos.onerror = function (err) {
+                    alert("No se pudo conectar a la impresora IP: " + ipImpresora + ". Asegúrate de estar en la misma red Wi-Fi.");
+                };
 
                 epos.send(address, builder.toString());
 
