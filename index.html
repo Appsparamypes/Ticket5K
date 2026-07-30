@@ -168,12 +168,11 @@
     function cargarDatosDesdeURL() {
         const params = new URLSearchParams(window.location.search);
 
-        // Extrae la IP
+        // Extrae la IP de la URL (?ip=192.168.1.X)
         if (params.get("ip")) {
             ipImpresora = params.get("ip").trim();
         }
 
-        // Poblado de encabezado
         document.getElementById("spn_nro_boleta").textContent = params.get("boleta") || "";
         document.getElementById("spn_fecha").textContent = params.get("fecha") || "";
         document.getElementById("spn_whatsapp").textContent = params.get("whatsapp") || "";
@@ -185,44 +184,35 @@
         document.getElementById("spn_a_cuenta").textContent = params.get("a_cuenta") || "0";
         document.getElementById("spn_saldo").textContent = params.get("saldo") || "0";
 
-        // --- SOLUCIÓN DEL ORDEN: Leer JSON ---
+        // Función para limpiar y separar parámetros asegurando el orden del array
+        const parseArrayParam = (key) => {
+            const raw = params.get(key);
+            if (!raw) return [];
+            return raw.split(",").map(item => decodeURIComponent(item).trim());
+        };
+
+        const cantidades = parseArrayParam("cantidades");
+        const servicios  = parseArrayParam("servicios");
+        const umeds      = parseArrayParam("umed");
+        const punits     = parseArrayParam("punit");
+        const subtotales = parseArrayParam("subtotal");
+
         const tbody = document.getElementById("detalle_items");
         tbody.innerHTML = "";
 
-        const jsonStr = params.get("detalles_json");
-        if (jsonStr) {
-            try {
-                // Parsear la cadena JSON
-                let detalles = JSON.parse(decodeURIComponent(jsonStr));
+        // Construcción estricta posición por posición
+        for (let i = 0; i < servicios.length; i++) {
+            if (!servicios[i]) continue;
 
-                // ELIMINAR LA COMA FINAL DE CADA FILA si existe
-                // (el CONCATENATE de AppSheet añade una coma al final de cada fila, necesitamos corregir el JSON)
-                detalles = detalles.map(str => {
-                   if (typeof str === 'string' && str.endsWith(',')) {
-                       return JSON.parse(str.slice(0, -1));
-                   }
-                   return str; // Si ya es un objeto, no hacer nada
-                });
-
-                // ORDENAR: Ordenar por la columna 'orden' (ascendente)
-                detalles.sort((a, b) => a.orden - b.orden);
-
-                // Dibujar la tabla
-                detalles.forEach(item => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td class="col-cant">${item.cant || ''}</td>
-                        <td class="col-desc">${item.desc || ''}</td>
-                        <td class="col-um">${item.um || '---'}</td>
-                        <td class="col-pu">${item.pu || ''}</td>
-                        <td class="col-sub">${item.sub || ''}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-
-            } catch (error) {
-                console.error("Error al parsear el JSON de detalles:", error);
-            }
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="col-cant">${cantidades[i] || ''}</td>
+                <td class="col-desc">${servicios[i] || ''}</td>
+                <td class="col-um">${umeds[i] || '---'}</td>
+                <td class="col-pu">${punits[i] || ''}</td>
+                <td class="col-sub">${subtotales[i] || ''}</td>
+            `;
+            tbody.appendChild(tr);
         }
     }
 
@@ -231,6 +221,7 @@
         if (!ticketElement) return;
 
         try {
+            // Asegura que el navegador haya pintado los cambios en el DOM en el orden correcto
             await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 100)));
 
             const canvas = await html2canvas(ticketElement, {
@@ -273,6 +264,7 @@
 
     window.addEventListener('load', () => {
         cargarDatosDesdeURL();
+        // Le damos un margen pequeño para garantizar renderizado antes de enviar a ePOS
         setTimeout(imprimirDirectoIpEpson, 500);
     });
 </script>
