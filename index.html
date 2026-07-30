@@ -161,102 +161,112 @@
         </div>
     </div>
 
-   <script>
-        // Variable global para la IP
-        let ipImpresora = "192.168.1.209";
+  <script>
+    // Variable global para la IP
+    let ipImpresora = "192.168.1.209";
 
-        function cargarDatosDesdeURL() {
-            const params = new URLSearchParams(window.location.search);
+    function cargarDatosDesdeURL() {
+        const params = new URLSearchParams(window.location.search);
 
-            // Extrae la IP de la URL (?ip=192.168.1.X)
-            if (params.get("ip")) {
-                ipImpresora = params.get("ip").trim();
-            }
+        // Extrae la IP de la URL (?ip=192.168.1.X)
+        if (params.get("ip")) {
+            ipImpresora = params.get("ip").trim();
+        }
 
-            document.getElementById("spn_nro_boleta").textContent = params.get("boleta") || "";
-            document.getElementById("spn_fecha").textContent = params.get("fecha") || "";
-            document.getElementById("spn_whatsapp").textContent = params.get("whatsapp") || "";
-            document.getElementById("spn_empresa").textContent = params.get("nombre") || "";
-            document.getElementById("spn_cliente").textContent = params.get("cliente") || "";
-            document.getElementById("spn_direc").textContent = params.get("direccion") || "";
-            document.getElementById("spn_forma").textContent = params.get("forma") || "";
-            document.getElementById("spn_total").textContent = params.get("total") || "0";
-            document.getElementById("spn_a_cuenta").textContent = params.get("a_cuenta") || "0";
-            document.getElementById("spn_saldo").textContent = params.get("saldo") || "0";
+        document.getElementById("spn_nro_boleta").textContent = params.get("boleta") || "";
+        document.getElementById("spn_fecha").textContent = params.get("fecha") || "";
+        document.getElementById("spn_whatsapp").textContent = params.get("whatsapp") || "";
+        document.getElementById("spn_empresa").textContent = params.get("nombre") || "";
+        document.getElementById("spn_cliente").textContent = params.get("cliente") || "";
+        document.getElementById("spn_direc").textContent = params.get("direccion") || "";
+        document.getElementById("spn_forma").textContent = params.get("forma") || "";
+        document.getElementById("spn_total").textContent = params.get("total") || "0";
+        document.getElementById("spn_a_cuenta").textContent = params.get("a_cuenta") || "0";
+        document.getElementById("spn_saldo").textContent = params.get("saldo") || "0";
 
-            const cantidades = (params.get("cantidades") || "").split(",");
-            const servicios  = (params.get("servicios") || "").split(",");
-            const umeds      = (params.get("umed") || "").split(",");
-            const punits     = (params.get("punit") || "").split(",");
-            const subtotales = (params.get("subtotal") || "").split(",");
+        // Función para limpiar y separar parámetros asegurando el orden del array
+        const parseArrayParam = (key) => {
+            const raw = params.get(key);
+            if (!raw) return [];
+            return raw.split(",").map(item => decodeURIComponent(item).trim());
+        };
 
-            const tbody = document.getElementById("detalle_items");
-            tbody.innerHTML = "";
+        const cantidades = parseArrayParam("cantidades");
+        const servicios  = parseArrayParam("servicios");
+        const umeds      = parseArrayParam("umed");
+        const punits     = parseArrayParam("punit");
+        const subtotales = parseArrayParam("subtotal");
 
-            if (servicios.length > 0 && servicios[0] !== "") {
-                for (let i = 0; i < servicios.length; i++) {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td class="col-cant">${cantidades[i] ? cantidades[i].trim() : ''}</td>
-                        <td class="col-desc">${servicios[i] ? decodeURIComponent(servicios[i]).trim() : ''}</td>
-                        <td class="col-um">${umeds[i] ? decodeURIComponent(umeds[i]).trim() : '---'}</td>
-                        <td class="col-pu">${punits[i] ? punits[i].trim() : ''}</td>
-                        <td class="col-sub">${subtotales[i] ? subtotales[i].trim() : ''}</td>
-                    `;
-                    tbody.appendChild(tr);
+        const tbody = document.getElementById("detalle_items");
+        tbody.innerHTML = "";
+
+        // Construcción estricta posición por posición
+        for (let i = 0; i < servicios.length; i++) {
+            if (!servicios[i]) continue;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="col-cant">${cantidades[i] || ''}</td>
+                <td class="col-desc">${servicios[i] || ''}</td>
+                <td class="col-um">${umeds[i] || '---'}</td>
+                <td class="col-pu">${punits[i] || ''}</td>
+                <td class="col-sub">${subtotales[i] || ''}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+
+    async function imprimirDirectoIpEpson() {
+        const ticketElement = document.getElementById("ticket");
+        if (!ticketElement) return;
+
+        try {
+            // Asegura que el navegador haya pintado los cambios en el DOM en el orden correcto
+            await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 100)));
+
+            const canvas = await html2canvas(ticketElement, {
+                scale: 2,
+                useCORS: true,
+                logging: false
+            });
+
+            const ctx = canvas.getContext("2d");
+
+            var builder = new epson.ePOSBuilder();
+            builder.addTextLang('es');
+            builder.addTextAlign(builder.ALIGN_LEFT);
+
+            builder.addImage(ctx, 0, 0, canvas.width, canvas.height, builder.COLOR_1, builder.MODE_MONO);
+
+            builder.addFeedUnit(30);
+            builder.addCut(builder.CUT_FEED);
+
+            var epos = new epson.ePOSPrint();
+            
+            var address = `http://${ipImpresora}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
+
+            epos.onreceive = function (res) {
+                if (!res.success) {
+                    alert("Error al imprimir en Epson (IP: " + ipImpresora + "). Código: " + res.code);
                 }
-            }
+            };
+
+            epos.onerror = function (err) {
+                alert("No se pudo conectar a la impresora IP: " + ipImpresora + ". Asegúrate de estar en la misma red Wi-Fi.");
+            };
+
+            epos.send(address, builder.toString());
+
+        } catch (error) {
+            console.error("Error al procesar la imagen del ticket:", error);
         }
+    }
 
-        async function imprimirDirectoIpEpson() {
-            const ticketElement = document.getElementById("ticket");
-
-            if (!ticketElement) return;
-
-            try {
-                const canvas = await html2canvas(ticketElement, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false
-                });
-
-                const ctx = canvas.getContext("2d");
-
-                var builder = new epson.ePOSBuilder();
-                builder.addTextLang('es');
-                builder.addTextAlign(builder.ALIGN_LEFT);
-
-                builder.addImage(ctx, 0, 0, canvas.width, canvas.height, builder.COLOR_1, builder.MODE_MONO);
-
-                builder.addFeedUnit(30);
-                builder.addCut(builder.CUT_FEED);
-
-                var epos = new epson.ePOSPrint();
-                
-                // Construye la dirección usando la IP tomada dinámicamente de la URL
-                var address = `http://${ipImpresora}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
-
-                epos.onreceive = function (res) {
-                    if (!res.success) {
-                        alert("Error al imprimir en Epson (IP: " + ipImpresora + "). Código: " + res.code);
-                    }
-                };
-
-                epos.onerror = function (err) {
-                    alert("No se pudo conectar a la impresora IP: " + ipImpresora + ". Asegúrate de estar en la misma red Wi-Fi.");
-                };
-
-                epos.send(address, builder.toString());
-
-            } catch (error) {
-                console.error("Error al procesar la imagen del ticket:", error);
-            }
-        }
-
-        window.addEventListener('load', () => {
-            cargarDatosDesdeURL();
-            setTimeout(imprimirDirectoIpEpson, 800);
-        });
-    </script>
+    window.addEventListener('load', () => {
+        cargarDatosDesdeURL();
+        // Le damos un margen pequeño para garantizar renderizado antes de enviar a ePOS
+        setTimeout(imprimirDirectoIpEpson, 500);
+    });
+</script>
 </body>
 </html>
